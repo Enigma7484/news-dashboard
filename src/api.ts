@@ -19,7 +19,7 @@ export async function fetchAllArticles() {
 // Fetch articles by sentiment (positive, neutral, negative)
 export const fetchArticlesBySentiment = async (sentiment: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:5001/sentiment/${sentiment}`);
+        const response = await fetch(`${API_BASE_URL}/sentiment/${sentiment}`);
         if (!response.ok) throw new Error("Failed to fetch articles");
         const data = await response.json();
         return data.articles; // Ensure articles are returned
@@ -33,7 +33,7 @@ export const fetchArticlesBySentiment = async (sentiment: string) => {
 // Search articles by keyword
 export const searchArticles = async (query: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:5001/sentiment/search?query=${encodeURIComponent(query)}`);
+        const response = await fetch(`${API_BASE_URL}/sentiment/search?query=${encodeURIComponent(query)}`);
         if (!response.ok) throw new Error("Failed to fetch search results");
         const data = await response.json();
         return data.articles; // Ensure articles are returned
