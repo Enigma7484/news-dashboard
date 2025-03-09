@@ -4,7 +4,7 @@ import "../App.css";
 const Footer: React.FC = () => {
     return (
         <footer className="footer">
-            <p>📢 NewsScraper &copy; {new Date().getFullYear()} | Built with ❤️ by Omar</p>
+            <p>📢 NewScraper &copy; {new Date().getFullYear()} | By <span style={{ color: "skyblue" }}>EN1GMA</span></p>
         </footer>
     );
 };
