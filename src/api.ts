@@ -1,5 +1,5 @@
 // Define the base API URL (update if your backend runs on a different port)
-const API_BASE_URL = "http://127.0.0.1:5001"; // Make sure this is correct
+const API_BASE_URL = "https://newsscraper-7csp.onrender.com";
 
 export async function fetchAllArticles() {
     try {
