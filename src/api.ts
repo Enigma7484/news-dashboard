@@ -1,5 +1,5 @@
 // Define the base API URL (update if your backend runs on a different port)
-const API_BASE_URL = "http://localhost:5001";
+const API_BASE_URL = "https://newsscraper-7csp.onrender.com";
 
 // Define pagination page size to match backend
 const PAGE_SIZE = 15; // This should match the PAGE_SIZE in the backend
