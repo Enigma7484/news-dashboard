@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchAllArticles, fetchArticlesBySentiment, searchArticles } from "../api";
+import { fetchArticles } from "../api";
 import ArticleCard from "../components/ArticleCard";
 import "../App.css";
 
@@ -13,33 +13,51 @@ interface Article {
     image?: string;
 }
 
+// Define pagination type
+interface Pagination {
+    total: number;
+    offset: number;
+    page_size: number;
+    has_more: boolean;
+}
+
 const Home: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
-    const [sentimentFilter, setSentimentFilter] = useState<string>(() => {
-        return localStorage.getItem("sentimentFilter") || "all";  // ✅ Load persisted filter
+    const [pagination, setPagination] = useState<Pagination>({
+        total: 0,
+        offset: 0,
+        page_size: 10,
+        has_more: false
     });
     const [searchQuery, setSearchQuery] = useState<string>("");
-    const [sortOrder, setSortOrder] = useState<string>("newest");
-    const [currentPage, setCurrentPage] = useState(1);
+    const [sortOrder, setSortOrder] = useState<string>("desc");
     const [darkMode, setDarkMode] = useState<boolean>(() => {
         return localStorage.getItem("darkMode") === "true";
     });
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const articlesPerPage = 6;
-
-    // Fetch articles based on sentiment filter
-    useEffect(() => {
-        localStorage.setItem("sentimentFilter", sentimentFilter);  // ✅ Persist filter selection
-        
-        if (sentimentFilter === "all") {
-            fetchAllArticles().then((articles) => {
-                setArticles(articles);
+    // Fetch articles with pagination and sorting
+    const loadArticles = async (offset = 0, keyword = "", sort = sortOrder) => {
+        setIsLoading(true);
+        try {
+            const response = await fetchArticles({
+                offset,
+                keyword,
+                sort: sort as 'asc' | 'desc'
             });
-        } else {
-            fetchArticlesBySentiment(sentimentFilter).then(setArticles);
+            setArticles(response.articles as Article[]);
+            setPagination(response.pagination);
+        } catch (error) {
+            console.error("Error loading articles:", error);
+        } finally {
+            setIsLoading(false);
         }
-    }, [sentimentFilter]);
-    
+    };
+
+    // Initial load
+    useEffect(() => {
+        loadArticles();
+    }, []);
 
     // Apply dark mode persistence
     useEffect(() => {
@@ -58,15 +76,14 @@ const Home: React.FC = () => {
 
     // Perform search
     const performSearch = async () => {
-        if (searchQuery.trim() !== "") {
-            const results = await searchArticles(searchQuery);
-            setArticles(results);
-            setCurrentPage(1);
-        } else {
-            sentimentFilter === "all"
-                ? fetchAllArticles().then(setArticles)
-                : fetchArticlesBySentiment(sentimentFilter).then(setArticles);
-        }
+        loadArticles(0, searchQuery.trim());
+    };
+
+    // Handle sort change
+    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newSortOrder = e.target.value;
+        setSortOrder(newSortOrder);
+        loadArticles(pagination.offset, searchQuery, newSortOrder);
     };
 
     // Toggle dark mode
@@ -74,38 +91,34 @@ const Home: React.FC = () => {
         setDarkMode((prevMode) => !prevMode);
     };
 
-    // Sorting functionality
-    const sortedArticles = [...articles].sort((a, b) => {
-        return sortOrder === "newest"
-            ? new Date(b.url).getTime() - new Date(a.url).getTime()
-            : new Date(a.url).getTime() - new Date(b.url).getTime();
-    });
-
-    // Pagination
-    const indexOfLastArticle = currentPage * articlesPerPage;
-    const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
-    const currentArticles = sortedArticles.slice(indexOfFirstArticle, indexOfLastArticle);
-
+    // Pagination handlers
     const nextPage = () => {
-        if (currentPage < Math.ceil(articles.length / articlesPerPage)) {
-            setCurrentPage((prevPage) => prevPage + 1);
+        if (pagination.has_more) {
+            const newOffset = pagination.offset + pagination.page_size;
+            loadArticles(newOffset, searchQuery, sortOrder);
         }
     };
 
     const prevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage((prevPage) => prevPage - 1);
+        if (pagination.offset > 0) {
+            const newOffset = Math.max(0, pagination.offset - pagination.page_size);
+            loadArticles(newOffset, searchQuery, sortOrder);
         }
     };
 
+    // Calculate current page number
+    const currentPage = Math.floor(pagination.offset / pagination.page_size) + 1;
+    const totalPages = Math.ceil(pagination.total / pagination.page_size);
+
     return (
         <div className={`container ${darkMode ? "dark" : ""}`}>
-            <h2>Latest News</h2>
-
-            {/* Dark Mode Toggle */}
-            <button onClick={toggleDarkMode} className="dark-mode-toggle">
-                {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
-            </button>
+            <div className="header-container">
+                <h2>Latest News</h2>
+                {/* Dark Mode Toggle */}
+                <button onClick={toggleDarkMode} className="dark-mode-toggle">
+                    {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
+                </button>
+            </div>
 
             {/* Search Bar */}
             <div className="search-bar">
@@ -118,48 +131,38 @@ const Home: React.FC = () => {
                 <button onClick={performSearch}>Search</button>
             </div>
 
-            {/* Sentiment Filter */}
-            <select
-                value={sentimentFilter}
-                onChange={(e) => setSentimentFilter(e.target.value)}
-                className="filter-dropdown"
-            >
-                <option value="all">All</option>
-                <option value="positive">Positive</option>
-                <option value="neutral">Neutral</option>
-                <option value="negative">Negative</option>
-            </select>
-
             {/* Sorting Options */}
             <select
                 value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
+                onChange={handleSortChange}
                 className="sort-dropdown"
             >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
+                <option value="desc">Newest First</option>
+                <option value="asc">Oldest First</option>
             </select>
 
             {/* News Grid */}
             <div className="grid">
-                {currentArticles.length > 0 ? (
-                    currentArticles.map((article) => (
+                {isLoading ? (
+                    <p style={{ textAlign: "center" }}>Loading...</p>
+                ) : articles.length > 0 ? (
+                    articles.map((article) => (
                         <ArticleCard key={article._id} {...article} />
                     ))
                 ) : (
-                    <p style={{ textAlign: "center" }}>Loading...</p>
+                    <p style={{ textAlign: "center" }}>No articles found</p>
                 )}
             </div>
 
             {/* Pagination Buttons */}
             <div className="pagination">
-                <button onClick={prevPage} disabled={currentPage === 1}>
+                <button onClick={prevPage} disabled={pagination.offset === 0}>
                     ◀ Previous
                 </button>
                 <span>
-                    Page {currentPage} of {Math.ceil(articles.length / articlesPerPage)}
+                    Page {currentPage} of {totalPages || 1}
                 </span>
-                <button onClick={nextPage} disabled={currentPage === Math.ceil(articles.length / articlesPerPage)}>
+                <button onClick={nextPage} disabled={!pagination.has_more}>
                     Next ▶
                 </button>
             </div>
