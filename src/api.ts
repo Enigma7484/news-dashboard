@@ -9,6 +9,7 @@ interface PaginationParams {
   offset?: number;
   sort?: 'asc' | 'desc';
   keyword?: string;
+  category?: 'positive' | 'negative' | 'neutral' | '';
 }
 
 // Interface for API response
@@ -48,6 +49,10 @@ export async function fetchArticles(params: PaginationParams = {}) {
     
     if (params.keyword) {
       queryParams.append('keyword', params.keyword);
+    }
+
+    if (params.category) {
+      queryParams.append('category', params.category);
     }
     
     // Make the API request with query parameters

@@ -7,7 +7,7 @@ const Settings: React.FC = () => {
     });
 
     const [defaultSort, setDefaultSort] = useState(() => {
-        return localStorage.getItem("defaultSort") || "newest";
+        return localStorage.getItem("defaultSort") || "desc";
     });
 
     const [darkMode, setDarkMode] = useState(() => {
@@ -66,8 +66,8 @@ const Settings: React.FC = () => {
                     value={defaultSort}
                     onChange={(e) => setDefaultSort(e.target.value)}
                 >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
+                    <option value="desc">Newest First</option>
+                    <option value="asc">Oldest First</option>
                 </select>
             </label>
         </div>
