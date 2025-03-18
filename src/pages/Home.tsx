@@ -30,20 +30,26 @@ const Home: React.FC = () => {
         has_more: false
     });
     const [searchQuery, setSearchQuery] = useState<string>("");
-    const [sortOrder, setSortOrder] = useState<string>("desc");
+    const [sortOrder, setSortOrder] = useState<string>(() => {
+        return localStorage.getItem("defaultSort") || "desc";
+    });
+    const [category, setCategory] = useState<string>(() => {
+        return localStorage.getItem("defaultSentiment") || "";
+    });
     const [darkMode, setDarkMode] = useState<boolean>(() => {
         return localStorage.getItem("darkMode") === "true";
     });
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     // Fetch articles with pagination and sorting
-    const loadArticles = async (offset = 0, keyword = "", sort = sortOrder) => {
+    const loadArticles = async (offset = 0, keyword = "", sort = sortOrder, selectedCategory = category) => {
         setIsLoading(true);
         try {
             const response = await fetchArticles({
                 offset,
                 keyword,
-                sort: sort as 'asc' | 'desc'
+                sort: sort as 'asc' | 'desc',
+                category: selectedCategory as 'positive' | 'negative' | 'neutral' | ''
             });
             setArticles(response.articles as Article[]);
             setPagination(response.pagination);
@@ -86,6 +92,13 @@ const Home: React.FC = () => {
         loadArticles(pagination.offset, searchQuery, newSortOrder);
     };
 
+    // Handle category change
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newCategory = e.target.value;
+        setCategory(newCategory);
+        loadArticles(0, searchQuery, sortOrder, newCategory);
+    };
+
     // Toggle dark mode
     const toggleDarkMode = () => {
         setDarkMode((prevMode) => !prevMode);
@@ -120,26 +133,41 @@ const Home: React.FC = () => {
                 </button>
             </div>
 
-            {/* Search Bar */}
-            <div className="search-bar">
-                <input
-                    type="text"
-                    placeholder="Search articles..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                />
-                <button onClick={performSearch}>Search</button>
-            </div>
+            {/* Search and Filter Controls */}
+            <div className="controls-container">
+                {/* Search Bar */}
+                <div className="search-bar">
+                    <input
+                        type="text"
+                        placeholder="Search articles..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                    />
+                    <button onClick={performSearch}>Search</button>
+                </div>
 
-            {/* Sorting Options */}
-            <select
-                value={sortOrder}
-                onChange={handleSortChange}
-                className="sort-dropdown"
-            >
-                <option value="desc">Newest First</option>
-                <option value="asc">Oldest First</option>
-            </select>
+                {/* Category Filter */}
+                <select
+                    value={category}
+                    onChange={handleCategoryChange}
+                    className="sort-dropdown"
+                >
+                    <option value="">All Categories</option>
+                    <option value="positive">Positive</option>
+                    <option value="negative">Negative</option>
+                    <option value="neutral">Neutral</option>
+                </select>
+
+                {/* Sorting Options */}
+                <select
+                    value={sortOrder}
+                    onChange={handleSortChange}
+                    className="sort-dropdown"
+                >
+                    <option value="desc">Newest First</option>
+                    <option value="asc">Oldest First</option>
+                </select>
+            </div>
 
             {/* News Grid */}
             <div className="grid">
