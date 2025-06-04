@@ -1,201 +1,232 @@
-import React, { useEffect, useState } from "react";
-import { fetchArticles } from "../api";
-import ArticleCard from "../components/ArticleCard";
-import "../App.css";
+// src/pages/Home.tsx
+import React, { useEffect, useState } from 'react';
+import { fetchArticles } from '../api';
+import ArticleCard from '../components/ArticleCard';
 
-// Define Article type
 interface Article {
-    _id: string;
-    headline: string;
-    url: string;
-    sentiment: string;
-    summary: string;
-    image?: string;
+  _id: string;
+  headline: string;
+  url: string;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  summary: string;
+  image?: string;
+  entities: string[];
+  timestamp?: string;
 }
 
-// Define pagination type
 interface Pagination {
-    total: number;
-    offset: number;
-    page_size: number;
-    has_more: boolean;
+  total: number;
+  offset: number;
+  page_size: number;
+  has_more: boolean;
 }
 
 const Home: React.FC = () => {
-    const [articles, setArticles] = useState<Article[]>([]);
-    const [pagination, setPagination] = useState<Pagination>({
-        total: 0,
-        offset: 0,
-        page_size: 10,
-        has_more: false
-    });
-    const [searchQuery, setSearchQuery] = useState<string>("");
-    const [sortOrder, setSortOrder] = useState<string>(() => {
-        return localStorage.getItem("defaultSort") || "desc";
-    });
-    const [category, setCategory] = useState<string>(() => {
-        return localStorage.getItem("defaultSentiment") || "";
-    });
-    const [darkMode, setDarkMode] = useState<boolean>(() => {
-        return localStorage.getItem("darkMode") === "true";
-    });
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [pagination, setPagination] = useState<Pagination>({
+    total: 0,
+    offset: 0,
+    page_size: 10,
+    has_more: false,
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(
+    (localStorage.getItem('defaultSort') as 'asc' | 'desc') || 'desc'
+  );
+  const [category, setCategory] = useState<string>(
+    localStorage.getItem('defaultSentiment') || ''
+  );
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem('darkMode') === 'true'
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
-    // Fetch articles with pagination and sorting
-    const loadArticles = async (offset = 0, keyword = "", sort = sortOrder, selectedCategory = category) => {
-        setIsLoading(true);
-        try {
-            const response = await fetchArticles({
-                offset,
-                keyword,
-                sort: sort as 'asc' | 'desc',
-                category: selectedCategory as 'positive' | 'negative' | 'neutral' | ''
-            });
-            setArticles(response.articles as Article[]);
-            setPagination(response.pagination);
-        } catch (error) {
-            console.error("Error loading articles:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const loadArticles = async (
+    offset = 0,
+    query = searchQuery,
+    sort = sortOrder,
+    cat = category
+  ) => {
+    setIsLoading(true);
+    try {
+      const r = await fetchArticles({
+        offset,
+        keyword: query,
+        sort,
+        category: cat as any,
+      });
+      setArticles(
+        r.articles.map((a: any) => ({
+          ...a,
+          entities: Array.isArray(a.entities) ? a.entities : [],
+        }))
+      );
+      setPagination(r.pagination);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    // Initial load
-    useEffect(() => {
-        loadArticles();
-    }, []);
+  // Initial load
+  useEffect(() => {
+    loadArticles();
+  }, []);
 
-    // Apply dark mode persistence
-    useEffect(() => {
-        localStorage.setItem("darkMode", String(darkMode));
-        if (darkMode) {
-            document.body.classList.add("dark-mode");
-        } else {
-            document.body.classList.remove("dark-mode");
-        }
-    }, [darkMode]);
+  // Dark mode toggle effect on body
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('darkMode', 'true');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('darkMode', 'false');
+    }
+  }, [darkMode]);
 
-    // Handle search input
-    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    };
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-6">
+      {/* Header & Toggle */}
+      <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          Latest News
+        </h2>
+        <button
+          onClick={() => setDarkMode((dm) => !dm)}
+          className="mt-4 md:mt-0 inline-flex items-center px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+        >
+          {darkMode ? '☀ Light Mode' : '🌙 Dark Mode'}
+        </button>
+      </div>
 
-    // Perform search
-    const performSearch = async () => {
-        loadArticles(0, searchQuery.trim());
-    };
-
-    // Handle sort change
-    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newSortOrder = e.target.value;
-        setSortOrder(newSortOrder);
-        loadArticles(pagination.offset, searchQuery, newSortOrder);
-    };
-
-    // Handle category change
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newCategory = e.target.value;
-        setCategory(newCategory);
-        loadArticles(0, searchQuery, sortOrder, newCategory);
-    };
-
-    // Toggle dark mode
-    const toggleDarkMode = () => {
-        setDarkMode((prevMode) => !prevMode);
-    };
-
-    // Pagination handlers
-    const nextPage = () => {
-        if (pagination.has_more) {
-            const newOffset = pagination.offset + pagination.page_size;
-            loadArticles(newOffset, searchQuery, sortOrder);
-        }
-    };
-
-    const prevPage = () => {
-        if (pagination.offset > 0) {
-            const newOffset = Math.max(0, pagination.offset - pagination.page_size);
-            loadArticles(newOffset, searchQuery, sortOrder);
-        }
-    };
-
-    // Calculate current page number
-    const currentPage = Math.floor(pagination.offset / pagination.page_size) + 1;
-    const totalPages = Math.ceil(pagination.total / pagination.page_size);
-
-    return (
-        <div className={`container ${darkMode ? "dark" : ""}`}>
-            <div className="header-container">
-                <h2>Latest News</h2>
-                {/* Dark Mode Toggle */}
-                <button onClick={toggleDarkMode} className="dark-mode-toggle">
-                    {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
-                </button>
-            </div>
-
-            {/* Search and Filter Controls */}
-            <div className="controls-container">
-                {/* Search Bar */}
-                <div className="search-bar">
-                    <input
-                        type="text"
-                        placeholder="Search articles..."
-                        value={searchQuery}
-                        onChange={handleSearch}
-                    />
-                    <button onClick={performSearch}>Search</button>
-                </div>
-
-                {/* Category Filter */}
-                <select
-                    value={category}
-                    onChange={handleCategoryChange}
-                    className="sort-dropdown"
-                >
-                    <option value="">All Categories</option>
-                    <option value="positive">Positive</option>
-                    <option value="negative">Negative</option>
-                    <option value="neutral">Neutral</option>
-                </select>
-
-                {/* Sorting Options */}
-                <select
-                    value={sortOrder}
-                    onChange={handleSortChange}
-                    className="sort-dropdown"
-                >
-                    <option value="desc">Newest First</option>
-                    <option value="asc">Oldest First</option>
-                </select>
-            </div>
-
-            {/* News Grid */}
-            <div className="grid">
-                {isLoading ? (
-                    <p style={{ textAlign: "center" }}>Loading...</p>
-                ) : articles.length > 0 ? (
-                    articles.map((article) => (
-                        <ArticleCard key={article._id} {...article} />
-                    ))
-                ) : (
-                    <p style={{ textAlign: "center" }}>No articles found</p>
-                )}
-            </div>
-
-            {/* Pagination Buttons */}
-            <div className="pagination">
-                <button onClick={prevPage} disabled={pagination.offset === 0}>
-                    ◀ Previous
-                </button>
-                <span>
-                    Page {currentPage} of {totalPages || 1}
-                </span>
-                <button onClick={nextPage} disabled={!pagination.has_more}>
-                    Next ▶
-                </button>
-            </div>
+      {/* Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Search Bar */}
+        <div className="col-span-1 md:col-span-2 flex">
+          <input
+            type="text"
+            placeholder="Search articles..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
+          />
+          <button
+            onClick={() => loadArticles(0)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-r-lg transition"
+          >
+            Search
+          </button>
         </div>
-    );
+
+        {/* Filters */}
+        <select
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            loadArticles(0, searchQuery, sortOrder, e.target.value);
+          }}
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All Sentiments</option>
+          <option value="positive">Positive</option>
+          <option value="neutral">Neutral</option>
+          <option value="negative">Negative</option>
+        </select>
+
+        <select
+          value={sortOrder}
+          onChange={(e) => {
+            setSortOrder(e.target.value as 'asc' | 'desc');
+            loadArticles(0, searchQuery, e.target.value as any, category);
+          }}
+          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="desc">Newest First</option>
+          <option value="asc">Oldest First</option>
+        </select>
+      </div>
+
+      {/* Article Grid */}
+      {isLoading ? (
+        <div className="text-center py-10">
+          <svg
+            className="animate-spin h-10 w-10 text-blue-600 mx-auto"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8H4z"
+            />
+          </svg>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">Loading…</p>
+        </div>
+      ) : articles.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {articles.map((a) => (
+            <ArticleCard key={a._id} {...a} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-gray-500 dark:text-gray-400">
+          No articles found.
+        </p>
+      )}
+
+      {/* Pagination */}
+      <div className="flex items-center justify-center mt-8 space-x-4">
+        <button
+          onClick={() =>
+            loadArticles(
+              Math.max(0, pagination.offset - pagination.page_size)
+            )
+          }
+          disabled={pagination.offset === 0}
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            pagination.offset === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 text-white'
+          }`}
+        >
+          ◀ Prev
+        </button>
+        <span className="text-gray-700 dark:text-gray-300">
+          Page{' '}
+          <span className="font-semibold">
+            {Math.floor(pagination.offset / pagination.page_size) + 1}
+          </span>{' '}
+          of{' '}
+          <span className="font-semibold">
+            {Math.ceil(pagination.total / pagination.page_size) || 1}
+          </span>
+        </span>
+        <button
+          onClick={() =>
+            loadArticles(pagination.offset + pagination.page_size)
+          }
+          disabled={!pagination.has_more}
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            !pagination.has_more
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 text-white'
+          }`}
+        >
+          Next ▶
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default Home;
