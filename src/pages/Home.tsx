@@ -1,5 +1,5 @@
 // src/pages/Home.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchArticles } from '../api';
 import ArticleCard from '../components/ArticleCard';
 
@@ -40,39 +40,55 @@ const Home: React.FC = () => {
     localStorage.getItem('darkMode') === 'true'
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const didInitialLoad = useRef(false);
 
-  const loadArticles = async (
-    offset = 0,
-    query = searchQuery,
-    sort = sortOrder,
-    cat = category
-  ) => {
-    setIsLoading(true);
-    try {
-      const r = await fetchArticles({
-        offset,
-        keyword: query,
-        sort,
-        category: cat as any,
-      });
-      setArticles(
-        r.articles.map((a: any) => ({
-          ...a,
-          entities: Array.isArray(a.entities) ? a.entities : [],
-        }))
-      );
-      setPagination(r.pagination);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const loadArticles = useCallback(
+    async (
+      offset = 0,
+      query = '',
+      sort: 'asc' | 'desc' = 'desc',
+      cat = ''
+    ) => {
+      setIsLoading(true);
+      setLoadError('');
+      try {
+        const r = await fetchArticles({
+          offset,
+          keyword: query,
+          sort,
+          category: cat as any,
+        });
+        setArticles(
+          r.articles.map((a: any) => ({
+            ...a,
+            entities: Array.isArray(a.entities) ? a.entities : [],
+          }))
+        );
+        setPagination(r.pagination);
+      } catch (e) {
+        console.error(e);
+        setArticles([]);
+        setPagination({
+          total: 0,
+          offset,
+          page_size: 15,
+          has_more: false,
+        });
+        setLoadError('Could not load articles. The backend may still be waking up.');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   // Initial load
   useEffect(() => {
-    loadArticles();
-  }, []);
+    if (didInitialLoad.current) return;
+    didInitialLoad.current = true;
+    loadArticles(0, searchQuery, sortOrder, category);
+  }, [category, loadArticles, searchQuery, sortOrder]);
 
   // Dark mode toggle effect on body
   useEffect(() => {
@@ -112,7 +128,7 @@ const Home: React.FC = () => {
             className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
           />
           <button
-            onClick={() => loadArticles(0)}
+            onClick={() => loadArticles(0, searchQuery, sortOrder, category)}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-r-lg transition"
           >
             Search
@@ -172,6 +188,16 @@ const Home: React.FC = () => {
           </svg>
           <p className="mt-2 text-gray-500 dark:text-gray-400">Loading…</p>
         </div>
+      ) : loadError ? (
+        <div className="text-center py-10">
+          <p className="text-gray-500 dark:text-gray-400">{loadError}</p>
+          <button
+            onClick={() => loadArticles(0, searchQuery, sortOrder, category)}
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition"
+          >
+            Retry
+          </button>
+        </div>
       ) : articles.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((a) => (
@@ -189,7 +215,10 @@ const Home: React.FC = () => {
         <button
           onClick={() =>
             loadArticles(
-              Math.max(0, pagination.offset - pagination.page_size)
+              Math.max(0, pagination.offset - pagination.page_size),
+              searchQuery,
+              sortOrder,
+              category
             )
           }
           disabled={pagination.offset === 0}
@@ -213,7 +242,12 @@ const Home: React.FC = () => {
         </span>
         <button
           onClick={() =>
-            loadArticles(pagination.offset + pagination.page_size)
+            loadArticles(
+              pagination.offset + pagination.page_size,
+              searchQuery,
+              sortOrder,
+              category
+            )
           }
           disabled={!pagination.has_more}
           className={`px-4 py-2 rounded-lg font-medium transition ${

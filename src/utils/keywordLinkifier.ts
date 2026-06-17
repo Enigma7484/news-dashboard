@@ -40,7 +40,7 @@ export function linkifyKeywords(
 
   // 5) Escape regex metachars, but build a U\.K\.?-style pattern for true acronyms
   const parts = keywords.map(k => {
-    const esc = (s: string) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const esc = (s: string) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
     if (/^[A-Z]+$/.test(k)) {
       // for "UK" → matches "U.K.", "U.K", or "UK"
       return k

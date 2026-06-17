@@ -1,8 +1,9 @@
-// Define the base API URL (update if your backend runs on a different port)
-const API_BASE_URL = "https://newsscraper-7csp.onrender.com";
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL ||
+  process.env.REACT_APP_BACKEND_URL ||
+  "https://newsscraper-7csp.onrender.com";
 
-// Define pagination page size to match backend
-const PAGE_SIZE = 15; // This should match the PAGE_SIZE in the backend
+const REQUEST_TIMEOUT_MS = 15000;
 
 // Interface for pagination parameters
 interface PaginationParams {
@@ -24,71 +25,66 @@ interface ApiResponse {
 }
 
 // Article interface
-interface Article {
+export interface Article {
   _id: string;
   headline: string;
   image: string | null;
-  sentiment: string;
+  sentiment: 'positive' | 'negative' | 'neutral';
   summary: string;
   timestamp: string;
   url: string;
 }
 
-export async function fetchArticles(params: PaginationParams = {}) {
-  try {
-    // Build query string from parameters
-    const queryParams = new URLSearchParams();
-    
-    if (params.offset !== undefined) {
-      queryParams.append('offset', params.offset.toString());
-    }
-    
-    if (params.sort) {
-      queryParams.append('sort', params.sort);
-    }
-    
-    if (params.keyword) {
-      queryParams.append('keyword', params.keyword);
-    }
+async function fetchJson<T>(url: string): Promise<T> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-    if (params.category) {
-      queryParams.append('category', params.category);
-    }
-    
-    // Make the API request with query parameters
-    const url = `${API_BASE_URL}/articles${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-    const response = await fetch(url);
-    
+  try {
+    const response = await fetch(url, {
+      cache: 'no-store',
+      signal: controller.signal,
+    });
     if (!response.ok) {
-      throw new Error("Failed to fetch articles");
+      throw new Error(`API request failed with ${response.status}`);
     }
-    
-    const data: ApiResponse = await response.json();
-    console.log("Fetched Articles:", data); // Debugging
-    return data;
-  } catch (error) {
-    console.error("Error fetching articles:", error);
-    return {
-      articles: [],
-      pagination: {
-        total: 0,
-        offset: params.offset || 0,
-        page_size: PAGE_SIZE,
-        has_more: false
-      }
-    };
+    return response.json();
+  } finally {
+    window.clearTimeout(timeout);
   }
+}
+
+export async function fetchArticles(params: PaginationParams = {}) {
+  // Build query string from parameters
+  const queryParams = new URLSearchParams();
+
+  if (params.offset !== undefined) {
+    queryParams.append('offset', params.offset.toString());
+  }
+
+  if (params.sort) {
+    queryParams.append('sort', params.sort);
+  }
+
+  if (params.keyword) {
+    queryParams.append('keyword', params.keyword);
+  }
+
+  if (params.category) {
+    queryParams.append('category', params.category);
+  }
+
+  queryParams.append('_t', Date.now().toString());
+
+  const url = `${API_BASE_URL}/articles?${queryParams.toString()}`;
+  return fetchJson<ApiResponse>(url);
 }
 
 // Fetch article by ID
 export async function fetchArticleById(articleId: string) {
   try {
-    const response = await fetch(`${API_BASE_URL}/articles/${articleId}`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch article details");
-    }
-    const data = await response.json();
-    return data;
+    return await fetchJson<Article>(
+      `${API_BASE_URL}/articles/${articleId}?_t=${Date.now()}`
+    );
   } catch (error) {
     console.error("Error fetching article by ID:", error);
     return null;

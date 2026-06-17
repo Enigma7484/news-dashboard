@@ -20,7 +20,7 @@ const App: React.FC = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, []);
+  }, [darkMode]);
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
