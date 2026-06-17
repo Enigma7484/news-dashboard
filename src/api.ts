@@ -1,7 +1,7 @@
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL ||
-  process.env.REACT_APP_BACKEND_URL ||
-  "https://newsscraper-7csp.onrender.com";
+const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || '').replace(/\/$/, '');
+const ARTICLES_ENDPOINT = API_BASE_URL
+  ? `${API_BASE_URL}/articles`
+  : '/api/articles';
 
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -75,7 +75,7 @@ export async function fetchArticles(params: PaginationParams = {}) {
 
   queryParams.append('_t', Date.now().toString());
 
-  const url = `${API_BASE_URL}/articles?${queryParams.toString()}`;
+  const url = `${ARTICLES_ENDPOINT}?${queryParams.toString()}`;
   return fetchJson<ApiResponse>(url);
 }
 
@@ -83,7 +83,7 @@ export async function fetchArticles(params: PaginationParams = {}) {
 export async function fetchArticleById(articleId: string) {
   try {
     return await fetchJson<Article>(
-      `${API_BASE_URL}/articles/${articleId}?_t=${Date.now()}`
+      `${ARTICLES_ENDPOINT}/${articleId}?_t=${Date.now()}`
     );
   } catch (error) {
     console.error("Error fetching article by ID:", error);
