@@ -1,58 +1,52 @@
-// src/App.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Settings from './pages/Settings';
 import ArticleDetail from './pages/ArticleDetail';
+import { applyTheme, getPreferences, savePreferences } from './utils/preferences';
 
 const App: React.FC = () => {
-  // Keep darkMode state at top level so Header and Home/Settings share it
-  const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem('darkMode') === 'true'
-  );
+  const [darkMode, setDarkMode] = useState(() => {
+    const preferences = getPreferences();
+    applyTheme(preferences.theme);
+    return preferences.theme !== 'light';
+  });
 
-  // On initial mount, apply dark class if needed
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
+    const syncTheme = () => {
+      const preferences = getPreferences();
+      applyTheme(preferences.theme);
+      setDarkMode(preferences.theme !== 'light');
+    };
+
+    syncTheme();
+    window.addEventListener('newsNowPreferencesChanged', syncTheme);
+    return () => window.removeEventListener('newsNowPreferencesChanged', syncTheme);
+  }, []);
 
   const toggleDarkMode = () => {
-    setDarkMode((prev) => {
-      const next = !prev;
-      if (next) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      localStorage.setItem('darkMode', String(next));
-      return next;
-    });
+    const preferences = getPreferences();
+    const next = {
+      ...preferences,
+      theme: darkMode ? 'light' as const : 'dark' as const,
+    };
+    savePreferences(next);
+    applyTheme(next.theme);
+    setDarkMode(next.theme !== 'light');
+    window.dispatchEvent(new Event('newsNowPreferencesChanged'));
   };
 
   return (
     <Router>
-      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
+      <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
         <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-        <main className="pt-4">
+        <main className="min-h-[calc(100vh-168px)]">
           <Routes>
-            <Route
-              path="/"
-              element={<Home />}
-            />
-            <Route
-              path="/settings"
-              element={<Settings />}
-            />
-            <Route
-              path="/article/:id"
-              element={<ArticleDetail />}
-            />
+            <Route path="/" element={<Home />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/article/:id" element={<ArticleDetail />} />
           </Routes>
         </main>
         <Footer />

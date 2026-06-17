@@ -27,6 +27,7 @@ interface ApiResponse {
 // Article interface
 export interface Article {
   _id: string;
+  entities?: string[];
   headline: string;
   image: string | null;
   sentiment: 'positive' | 'negative' | 'neutral';

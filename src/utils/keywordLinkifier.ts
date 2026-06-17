@@ -2,9 +2,13 @@
 
 export function linkifyKeywords(
   summary: string,
-  dynamicKeywords: string[] = []
+  dynamicKeywords: string[] = [],
+  enabled = true
 ): string {
   if (!summary) return "";
+  if (!enabled) {
+    return summary.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
 
   // 1) Capitalize first character of the summary if it isn't already
   let safe = summary.charAt(0).toUpperCase() + summary.slice(1);
@@ -12,29 +16,7 @@ export function linkifyKeywords(
   // 2) Escape any raw HTML
   safe = safe.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  // 3) A small stopword list to filter out things like "in", "one", "first", etc.
-  const stopwords = new Set([
-    "in", "on", "at", "from", "via", "for", "one", "first", "this", "that",
-    "been", "summer", "three", "day", "days", "about", "over", "more", "than",
-    // months (to avoid "March", "April" etc. being highlighted as dates)
-    "january","february","march","april","may","june","july","august",
-    "september","october","november","december",
-  ]);
-
-  // 4) Build a cleaned, deduped, longest-first list of keywords
-  const keywords = Array.from(new Set(dynamicKeywords.map(k => k.trim())))
-    .filter(k => {
-      const lower = k.toLowerCase();
-      // drop stopwords
-      if (stopwords.has(lower)) return false;
-      // drop pure numbers or number-heavy phrases
-      if (/\d/.test(k)) return false;
-      // allow single uppercase letters like "V" (but NOT just "A" or "I")
-      if (k.length === 1) return /^[B-Z]$/.test(k);
-      // everything else is okay
-      return k.length > 1;
-    })
-    .sort((a, b) => b.length - a.length);
+  const keywords = getLookupKeywords(dynamicKeywords);
 
   if (keywords.length === 0) return safe;
 
@@ -57,8 +39,64 @@ export function linkifyKeywords(
 
   // 7) Replace each hit with a Wikipedia link + <strong>
   return safe.replace(re, match => {
-    const title = match.replace(/\./g, "").replace(/\s+/g, "_");
-    const href = `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`;
-    return `<a href="${href}" target="_blank" rel="noopener noreferrer"><strong>${match}</strong></a>`;
+    const label = stripTrailingPunctuation(match);
+    const punctuation = match.slice(label.length);
+    const title = label.replace(/\./g, "").replace(/\s+/g, " ").trim();
+    const href = `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(title)}`;
+    return `<a class="entity-link" href="${href}" target="_blank" rel="noopener noreferrer" title="Search Wikipedia for ${escapeAttribute(title)}"><strong>${label}</strong></a>${punctuation}`;
   });
+}
+
+export function getLookupKeywords(dynamicKeywords: string[] = []): string[] {
+  const stopwords = new Set([
+    "in", "on", "at", "from", "via", "for", "one", "first", "this", "that",
+    "been", "summer", "three", "day", "days", "about", "over", "more", "than",
+    "the", "new", "old", "said", "says", "say", "will", "would", "could",
+    "should", "today", "tomorrow", "yesterday", "tuesday", "monday",
+    "wednesday", "thursday", "friday", "saturday", "sunday",
+    "now", "after", "before", "designed", "language", "government",
+    "minister", "ceo", "liberal", "conservative", "conservatives",
+    "with", "without", "under", "former", "consider", "advocates",
+    "missing", "girls", "indigenous",
+    // months (to avoid "March", "April" etc. being highlighted as dates)
+    "january","february","march","april","may","june","july","august",
+    "september","october","november","december",
+  ]);
+
+  const weekdays = new Set([
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+  ]);
+
+  return Array.from(new Set(dynamicKeywords.map(k => normalizeKeyword(k))))
+    .filter(k => {
+      const lower = k.toLowerCase();
+      if (stopwords.has(lower)) return false;
+      if (/\d/.test(k)) return false;
+      const tokens = lower.split(/\s+/);
+      if (tokens.length <= 2 && tokens.some(token => weekdays.has(token))) return false;
+      if (tokens.every(token => stopwords.has(token))) return false;
+      if (k.length === 1) return false;
+      if (isAcronym(k)) return k.replace(/[^A-Z]/g, '').length >= 2;
+      return /\b[A-Z][a-z][\w'-]*\b/.test(k) && k.length > 2;
+    })
+    .sort((a, b) => b.length - a.length);
+}
+
+function normalizeKeyword(keyword: string): string {
+  return stripTrailingPunctuation(keyword)
+    .replace(/^[^\w]+|[^\w.)]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stripTrailingPunctuation(value: string): string {
+  return value.replace(/[,\s;:]+$/g, "");
+}
+
+function isAcronym(value: string): boolean {
+  return /^(?:[A-Z]\.?){2,}$/.test(value.replace(/\s+/g, ""));
+}
+
+function escapeAttribute(value: string): string {
+  return value.replace(/"/g, "&quot;");
 }

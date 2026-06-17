@@ -3,4 +3,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optional: you can add custom styles below if needed */
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  .entity-link {
+    @apply rounded bg-blue-50 px-1 font-semibold text-blue-700 underline decoration-blue-300 decoration-2 underline-offset-2 transition hover:bg-blue-100 hover:text-blue-900 dark:bg-blue-400/10 dark:text-blue-200 dark:decoration-blue-300/60 dark:hover:bg-blue-400/20;
+  }
+}
