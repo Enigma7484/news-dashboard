@@ -82,6 +82,7 @@ const Home: React.FC = () => {
           keyword: query,
           sort,
           category: cat,
+          allTime: true,
         });
         setArticles(
           r.articles.map((a: any) => ({

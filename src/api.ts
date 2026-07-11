@@ -11,6 +11,7 @@ interface PaginationParams {
   sort?: 'asc' | 'desc';
   keyword?: string;
   category?: 'positive' | 'negative' | 'neutral' | '';
+  allTime?: boolean;
 }
 
 // Interface for API response
@@ -72,6 +73,10 @@ export async function fetchArticles(params: PaginationParams = {}) {
 
   if (params.category) {
     queryParams.append('category', params.category);
+  }
+
+  if (params.allTime) {
+    queryParams.append('all_time', '1');
   }
 
   queryParams.append('_t', Date.now().toString());
