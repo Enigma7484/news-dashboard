@@ -71,6 +71,7 @@ export function getLookupKeywords(dynamicKeywords: string[] = []): string[] {
     .filter(k => {
       const lower = k.toLowerCase();
       if (stopwords.has(lower)) return false;
+      if (/\bsave\s+share\b/.test(lower)) return false;
       if (/\d/.test(k)) return false;
       const tokens = lower.split(/\s+/);
       if (tokens.length <= 2 && tokens.some(token => weekdays.has(token))) return false;

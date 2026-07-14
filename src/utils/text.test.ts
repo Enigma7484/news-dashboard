@@ -1,0 +1,21 @@
+import { getLookupKeywords, linkifyKeywords } from './keywordLinkifier';
+import { cleanDisplaySummary } from './text';
+
+describe('article text cleanup', () => {
+  it('removes inline Save Share toolbar text', () => {
+    expect(
+      cleanDisplaySummary(
+        "Millions lost power. Save Share Cuba's national power grid collapsed."
+      )
+    ).toBe("Millions lost power. Cuba's national power grid collapsed.");
+  });
+
+  it('does not expose or link contaminated entities', () => {
+    const entities = ['Save Share Cuba', 'Cuba', 'US'];
+
+    expect(getLookupKeywords(entities)).toEqual(['Cuba', 'US']);
+    expect(linkifyKeywords('Save Share Cuba and the US responded.', entities)).not.toContain(
+      'search=Save%20Share%20Cuba'
+    );
+  });
+});
