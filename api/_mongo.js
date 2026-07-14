@@ -3,6 +3,10 @@ const { MongoClient, ObjectId } = require('mongodb');
 const PAGE_SIZE = 15;
 const DEFAULT_RECENT_DAYS = Number(process.env.DEFAULT_RECENT_DAYS || 2);
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 let clientPromise;
 
 function getClient() {
@@ -60,9 +64,11 @@ function buildArticlesQuery(queryParams = {}) {
   }
 
   if (keyword) {
+    const escapedKeyword = escapeRegex(keyword.slice(0, 80));
     query.$or = [
-      { headline: { $regex: keyword, $options: 'i' } },
-      { summary: { $regex: keyword, $options: 'i' } },
+      { headline: { $regex: escapedKeyword, $options: 'i' } },
+      { summary: { $regex: escapedKeyword, $options: 'i' } },
+      { entities: { $regex: escapedKeyword, $options: 'i' } },
     ];
   }
 

@@ -23,6 +23,8 @@ interface ArticleProps {
   density: Density;
   showImages: boolean;
   highlightEntities: boolean;
+  source_name?: string;
+  source_url?: string;
 }
 
 const sentimentStyles: Record<string, string> = {
@@ -53,11 +55,13 @@ const ArticleCard: React.FC<ArticleProps> = ({
   density,
   showImages,
   highlightEntities,
+  source_name,
+  source_url,
 }) => {
   const displaySummary = cleanDisplaySummary(summary, headline);
   const displayEntities = getLookupKeywords(entities);
   const linkedSummary = linkifyKeywords(displaySummary, entities, highlightEntities);
-  const source = getArticleSource(url);
+  const source = getArticleSource(url, source_name, source_url);
   const isCompact = viewMode === 'compact' || density === 'compact';
   const isSpotlight = viewMode === 'spotlight';
   const hasImage = Boolean(image && showImages);

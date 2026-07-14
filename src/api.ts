@@ -35,6 +35,8 @@ export interface Article {
   summary: string;
   timestamp: string;
   url: string;
+  source_name?: string;
+  source_url?: string;
 }
 
 async function fetchJson<T>(url: string): Promise<T> {

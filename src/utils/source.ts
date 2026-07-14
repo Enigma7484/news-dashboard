@@ -18,13 +18,17 @@ function rootDomain(hostname: string) {
   return hostname.replace(/^www\./, '').split('.').slice(-2).join('.');
 }
 
-export function getArticleSource(url: string): ArticleSource {
+export function getArticleSource(
+  url: string,
+  sourceName?: string,
+  sourceUrl?: string
+): ArticleSource {
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(sourceUrl || url);
     const host = parsed.hostname.replace(/^www\./, '');
     const root = rootDomain(host);
     return {
-      name: SOURCE_NAMES[host] || SOURCE_NAMES[root] || host,
+      name: sourceName || SOURCE_NAMES[host] || SOURCE_NAMES[root] || host,
       host,
       logoUrl: `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=64`,
     };

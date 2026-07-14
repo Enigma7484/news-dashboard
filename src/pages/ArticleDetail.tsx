@@ -21,6 +21,8 @@ interface Article {
   image: string | null;
   timestamp: string;
   entities?: string[];
+  source_name?: string;
+  source_url?: string;
 }
 
 const sentimentLabels: Record<string, string> = {
@@ -73,7 +75,11 @@ const ArticleDetail: React.FC = () => {
     );
   }
 
-  const source = getArticleSource(article.url);
+  const source = getArticleSource(
+    article.url,
+    article.source_name,
+    article.source_url
+  );
   const preferences = getPreferences();
   const displaySummary = cleanDisplaySummary(article.summary, article.headline);
   const displayEntities = getLookupKeywords(article.entities || []);
