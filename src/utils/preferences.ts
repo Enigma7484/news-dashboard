@@ -1,7 +1,7 @@
 export type SentimentFilter = '' | 'positive' | 'neutral' | 'negative';
 export type SortOrder = 'asc' | 'desc';
 export type ViewMode = 'grid' | 'compact' | 'spotlight';
-export type ThemeMode = 'dark' | 'light' | 'system';
+export type ThemeMode = 'signal' | 'dark' | 'light' | 'system';
 export type Density = 'comfortable' | 'compact';
 
 export interface Preferences {
@@ -20,7 +20,7 @@ export const defaultPreferences: Preferences = {
   sentiment: '',
   sort: 'desc',
   view: 'grid',
-  theme: 'dark',
+  theme: 'signal',
   density: 'comfortable',
   showImages: true,
   highlightEntities: true,
@@ -33,6 +33,7 @@ function normalizeSentiment(value: unknown): SentimentFilter {
 }
 
 function readLegacyPreferences(): Partial<Preferences> {
+  const legacyDarkMode = localStorage.getItem('darkMode');
   return {
     sentiment: normalizeSentiment(
       localStorage.getItem('defaultSentiment') === 'all'
@@ -40,7 +41,9 @@ function readLegacyPreferences(): Partial<Preferences> {
         : localStorage.getItem('defaultSentiment')
     ),
     sort: localStorage.getItem('defaultSort') === 'asc' ? 'asc' : 'desc',
-    theme: localStorage.getItem('darkMode') === 'false' ? 'light' : 'dark',
+    ...(legacyDarkMode === null
+      ? {}
+      : { theme: legacyDarkMode === 'false' ? 'light' as const : 'dark' as const }),
   };
 }
 
@@ -57,7 +60,7 @@ export function getPreferences(): Preferences {
       view: ['grid', 'compact', 'spotlight'].includes(parsed.view)
         ? parsed.view
         : defaultPreferences.view,
-      theme: ['dark', 'light', 'system'].includes(parsed.theme)
+      theme: ['signal', 'dark', 'light', 'system'].includes(parsed.theme)
         ? parsed.theme
         : defaultPreferences.theme,
       density: parsed.density === 'compact' ? 'compact' : 'comfortable',
@@ -78,6 +81,8 @@ export function savePreferences(next: Preferences) {
 
 export function applyTheme(theme: ThemeMode) {
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const shouldUseDark = theme === 'dark' || (theme === 'system' && prefersDark);
+  const shouldUseDark =
+    theme === 'signal' || theme === 'dark' || (theme === 'system' && prefersDark);
   document.documentElement.classList.toggle('dark', shouldUseDark);
+  document.documentElement.classList.toggle('theme-signal', theme === 'signal');
 }

@@ -4,13 +4,106 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --accent: #6d9700;
+    --accent-hover: #8fca00;
+    --accent-soft: #dfff94;
+    --accent-contrast: #111411;
+    --app-bg: #f3f3ed;
+    --panel: #ffffff;
+    --panel-muted: #eaeae3;
+    --line: #d7d8d1;
+    --text: #111411;
+  }
+
+  .dark {
+    --accent: #60a5fa;
+    --accent-hover: #93c5fd;
+    --accent-soft: #dbeafe;
+    --accent-contrast: #020617;
+    --app-bg: #020617;
+    --panel: #0f172a;
+    --panel-muted: #0b1220;
+    --line: #334155;
+    --text: #f8fafc;
+  }
+
+  .dark.theme-signal {
+    --accent: #b9ff2c;
+    --accent-hover: #d2ff78;
+    --accent-soft: #d7ff82;
+    --accent-contrast: #080b09;
+    --app-bg: #080b09;
+    --panel: #0d100e;
+    --panel-muted: #0a0d0b;
+    --line: #292d29;
+    --text: #f4f4ee;
+  }
+
+  html {
+    background: var(--app-bg);
+  }
+
   body {
     @apply antialiased;
+    letter-spacing: 0;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-contrast);
   }
 }
 
 @layer components {
   .entity-link {
-    @apply rounded bg-blue-50 px-1 font-semibold text-blue-700 underline decoration-blue-300 decoration-2 underline-offset-2 transition hover:bg-blue-100 hover:text-blue-900 dark:bg-blue-400/10 dark:text-blue-200 dark:decoration-blue-300/60 dark:hover:bg-blue-400/20;
+    @apply rounded px-1 font-semibold underline decoration-2 underline-offset-2 transition;
+    background: rgb(185 255 44 / 0.1);
+    color: #4f6f00;
+    text-decoration-color: rgb(101 139 0 / 0.45);
+  }
+
+  .entity-link:hover {
+    background: rgb(185 255 44 / 0.22);
+    color: #263700;
+  }
+
+  .dark .entity-link {
+    background: rgb(185 255 44 / 0.09);
+    color: var(--accent-soft);
+    text-decoration-color: color-mix(in srgb, var(--accent) 48%, transparent);
+  }
+
+  .dark .entity-link:hover {
+    background: rgb(185 255 44 / 0.17);
+    color: var(--accent);
+  }
+
+  .signal-grid {
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--accent) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--accent) 5%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .signal-kicker {
+    @apply font-mono text-xs font-bold uppercase;
+    color: #658b00;
+    letter-spacing: 0.16em;
+  }
+
+  .dark .signal-kicker {
+    color: var(--accent);
+  }
+
+  .signal-focus:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+    outline: none;
+  }
+
+  .signal-pulse {
+    background: var(--accent);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
   }
 }

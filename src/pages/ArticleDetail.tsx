@@ -62,7 +62,7 @@ const ArticleDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-72 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600" />
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[var(--line)] border-t-[var(--accent)]" />
       </div>
     );
   }
@@ -93,13 +93,13 @@ const ArticleDetail: React.FC = () => {
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
         to="/"
-        className="mb-6 inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+        className="mb-6 inline-flex items-center gap-2 rounded-md border border-[var(--line)] bg-[var(--panel)] px-3 py-2 text-sm font-bold text-slate-700 transition hover:border-[var(--accent)] dark:text-slate-200"
       >
         <ArrowLeftIcon className="h-4 w-4" />
         Back
       </Link>
 
-      <article className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <article className="overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--panel)]">
         {article.image && preferences.showImages && (
           <div className="h-80 overflow-hidden bg-slate-200 dark:bg-slate-800">
             <img
@@ -133,7 +133,7 @@ const ArticleDetail: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="max-w-4xl text-3xl font-black leading-tight text-slate-950 dark:text-white sm:text-5xl">
+          <h1 className="max-w-4xl text-3xl font-black leading-tight text-[var(--text)] sm:text-5xl">
             {article.headline}
           </h1>
 
@@ -147,7 +147,7 @@ const ArticleDetail: React.FC = () => {
               {displayEntities.slice(0, 8).map((entity) => (
                 <span
                   key={entity}
-                  className="rounded-full border border-slate-200 px-3 py-1 text-xs font-bold text-slate-500 dark:border-slate-700 dark:text-slate-400"
+                  className="rounded border border-[var(--line)] px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.05em] text-slate-500 dark:text-slate-400"
                 >
                   {entity}
                 </span>
@@ -159,7 +159,7 @@ const ArticleDetail: React.FC = () => {
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 inline-flex items-center gap-2 rounded-md bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-500"
+            className="mt-8 inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-5 py-3 text-sm font-black text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)]"
           >
             Read Full Article
             <ArrowTopRightOnSquareIcon className="h-4 w-4" />

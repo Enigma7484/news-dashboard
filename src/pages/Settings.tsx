@@ -33,10 +33,10 @@ const Settings: React.FC = () => {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
-        <p className="mb-2 text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">
+        <p className="signal-kicker mb-2">
           Preferences
         </p>
-        <h1 className="text-3xl font-black text-slate-950 dark:text-white">
+        <h1 className="text-3xl font-black text-[var(--text)]">
           Settings
         </h1>
       </div>
@@ -49,7 +49,8 @@ const Settings: React.FC = () => {
             <Segmented
               value={preferences.theme}
               options={[
-                ['dark', 'Dark'],
+                ['signal', 'Signal'],
+                ['dark', 'Midnight'],
                 ['light', 'Light'],
                 ['system', 'System'],
               ]}
@@ -81,7 +82,7 @@ const Settings: React.FC = () => {
             <select
               value={preferences.sentiment}
               onChange={(e) => update({ sentiment: e.target.value as SentimentFilter })}
-              className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="signal-focus w-full rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-100"
             >
               <option value="">All Sentiments</option>
               <option value="positive">Positive</option>
@@ -161,14 +162,14 @@ function SettingsPanel({
   control: React.ReactNode;
 }) {
   return (
-    <section className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section className="flex flex-col gap-4 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-blue-300">
+        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)]">
           <Icon className="h-5 w-5" />
         </div>
-        <h2 className="font-bold text-slate-900 dark:text-white">{title}</h2>
+        <h2 className="font-bold text-[var(--text)]">{title}</h2>
       </div>
-      <div className="min-w-[220px]">{control}</div>
+      <div className="w-full min-w-0 sm:w-auto sm:min-w-[220px]">{control}</div>
     </section>
   );
 }
@@ -183,14 +184,14 @@ function Segmented({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="flex rounded-md bg-slate-100 p-1 dark:bg-slate-950">
+    <div className="flex rounded-md border border-[var(--line)] bg-[var(--app-bg)] p-1">
       {options.map(([optionValue, label]) => (
         <button
           key={optionValue}
           onClick={() => onChange(optionValue)}
           className={`flex-1 rounded px-3 py-2 text-xs font-bold transition ${
             value === optionValue
-              ? 'bg-white text-blue-600 shadow-sm dark:bg-slate-800 dark:text-blue-300'
+              ? 'bg-[var(--accent)] text-[var(--accent-contrast)]'
               : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
           }`}
         >
@@ -212,7 +213,7 @@ function Toggle({
     <button
       onClick={onChange}
       className={`ml-auto flex h-8 w-14 items-center rounded-full p-1 transition ${
-        checked ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+        checked ? 'bg-[var(--accent)]' : 'bg-slate-300 dark:bg-slate-700'
       }`}
       aria-pressed={checked}
     >

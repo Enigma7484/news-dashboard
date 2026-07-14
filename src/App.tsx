@@ -30,7 +30,7 @@ const App: React.FC = () => {
     const preferences = getPreferences();
     const next = {
       ...preferences,
-      theme: darkMode ? 'light' as const : 'dark' as const,
+      theme: darkMode ? 'light' as const : 'signal' as const,
     };
     savePreferences(next);
     applyTheme(next.theme);
@@ -40,7 +40,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
+      <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text)] transition-colors">
         <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <main className="min-h-[calc(100vh-168px)]">
           <Routes>

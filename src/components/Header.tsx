@@ -14,26 +14,26 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleDarkMode }) => {
   const linkClasses = (path: string) =>
     `inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition ${
       location.pathname === path
-        ? 'bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300'
-        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+        ? 'bg-[var(--accent)] text-[var(--accent-contrast)]'
+        : 'text-zinc-600 hover:bg-black/5 hover:text-black dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-[var(--text)]'
     }`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
+    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--app-bg)]/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
-          <img src={Logo} alt="NewsNow" className="h-12 w-12 rounded-md object-cover" />
+          <img src={Logo} alt="NewsNow" className="h-11 w-11 rounded-md border border-[var(--line)] object-cover" />
           <div className="hidden sm:block">
-            <div className="text-base font-black leading-none text-slate-950 dark:text-white">
-              NewsNow
+            <div className="text-base font-black leading-none text-[var(--text)]">
+              NewsNow<span className="text-[var(--accent)]">.</span>
             </div>
-            <div className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-400">
+            <div className="mt-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-500">
               Signal Dashboard
             </div>
           </div>
         </Link>
 
-        <nav className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-900">
+        <nav className="flex items-center gap-1 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-1">
           <Link to="/" className={linkClasses('/')}>
             <HomeIcon className="h-4 w-4" />
             Home
@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleDarkMode }) => {
 
         <button
           onClick={toggleDarkMode}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel)] text-zinc-700 transition hover:border-[var(--accent)] hover:text-[var(--accent)] dark:text-zinc-300"
           aria-label={darkMode ? 'Switch to light theme' : 'Switch to dark theme'}
           title={darkMode ? 'Light theme' : 'Dark theme'}
         >
