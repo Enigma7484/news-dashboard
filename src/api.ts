@@ -12,6 +12,7 @@ interface PaginationParams {
   keyword?: string;
   category?: 'positive' | 'negative' | 'neutral' | '';
   bias?: 'left' | 'centrist' | 'right' | '';
+  source?: string;
   allTime?: boolean;
 }
 
@@ -90,6 +91,10 @@ export async function fetchArticles(params: PaginationParams = {}) {
 
   if (params.bias) {
     queryParams.append('bias', params.bias);
+  }
+
+  if (params.source) {
+    queryParams.append('source', params.source);
   }
 
   if (params.allTime) {

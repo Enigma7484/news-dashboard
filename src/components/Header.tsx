@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Cog6ToothIcon, HomeIcon, MoonIcon, SunIcon } from '@heroicons/react/24/outline';
-import Logo from '../assets/logo.png';
+import SignalLogo from './SignalLogo';
 
 interface HeaderProps {
   darkMode: boolean;
@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleDarkMode }) => {
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--app-bg)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
-          <img src={Logo} alt="NewsNow" className="h-11 w-11 rounded-md border border-[var(--line)] object-cover" />
+          <SignalLogo />
           <div className="hidden sm:block">
             <div className="text-base font-black leading-none text-[var(--text)]">
               NewsNow<span className="text-[var(--accent)]">.</span>

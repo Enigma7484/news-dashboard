@@ -4,6 +4,24 @@ export interface ArticleSource {
   logoUrl: string;
 }
 
+export const ARTICLE_SOURCE_OPTIONS = [
+  { value: 'bbc.com', label: 'BBC' },
+  { value: 'cbc.ca', label: 'CBC' },
+  { value: 'cnn.com', label: 'CNN' },
+  { value: 'foxnews.com', label: 'Fox News' },
+  { value: 'theguardian.com', label: 'The Guardian' },
+  { value: 'aljazeera.com', label: 'Al Jazeera' },
+  { value: 'nytimes.com', label: 'NYT' },
+] as const;
+
+export type SourceFilter = '' | (typeof ARTICLE_SOURCE_OPTIONS)[number]['value'];
+
+export function normalizeSourceFilter(value: unknown): SourceFilter {
+  return ARTICLE_SOURCE_OPTIONS.some((source) => source.value === value)
+    ? value as SourceFilter
+    : '';
+}
+
 const SOURCE_NAMES: Record<string, string> = {
   'bbc.com': 'BBC',
   'cnn.com': 'CNN',
