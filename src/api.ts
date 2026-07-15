@@ -39,9 +39,11 @@ export interface Article {
   bias_score?: number | null;
   bias_confidence?: number | null;
   bias_method?: string | null;
+  bias_rationale?: string | null;
+  bias_is_political?: boolean | null;
   bias_signals?: Array<{
     phrase: string;
-    lean: 'left' | 'right';
+    lean: 'left' | 'centrist' | 'right';
   }>;
   source_name?: string;
   source_url?: string;

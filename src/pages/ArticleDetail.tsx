@@ -136,6 +136,7 @@ const ArticleDetail: React.FC = () => {
               score={article.bias_score}
               confidence={article.bias_confidence}
               signals={article.bias_signals}
+              rationale={article.bias_rationale}
             />
           </div>
 

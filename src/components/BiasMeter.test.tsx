@@ -23,6 +23,6 @@ describe('BiasMeter', () => {
     render(<BiasMeter bias={null} score={null} compact />);
 
     expect(screen.getByLabelText('Political bias analysis pending')).toBeInTheDocument();
-    expect(screen.getByText('Pending')).toBeInTheDocument();
+    expect(screen.getByText('Awaiting analysis')).toBeInTheDocument();
   });
 });
