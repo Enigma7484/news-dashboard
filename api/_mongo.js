@@ -55,6 +55,7 @@ function buildArticlesQuery(queryParams = {}) {
   const query = qualityQuery();
   const category = String(queryParams.category || '').toLowerCase();
   const bias = String(queryParams.bias || '').toLowerCase();
+  const source = String(queryParams.source || '').trim().toLowerCase().slice(0, 80);
   const keyword = String(queryParams.keyword || '').trim();
   const allTime = ['1', 'true', 'yes'].includes(
     String(queryParams.all_time || '').toLowerCase()
@@ -66,6 +67,16 @@ function buildArticlesQuery(queryParams = {}) {
 
   if (['left', 'centrist', 'right'].includes(bias)) {
     query.bias = bias;
+  }
+
+  if (/^[a-z0-9.-]+$/.test(source)) {
+    const escapedSource = escapeRegex(source);
+    query.$and.push({
+      $or: [
+        { url: { $regex: escapedSource, $options: 'i' } },
+        { source_url: { $regex: escapedSource, $options: 'i' } },
+      ],
+    });
   }
 
   if (keyword) {

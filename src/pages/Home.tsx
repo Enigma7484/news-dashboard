@@ -18,6 +18,7 @@ import {
   savePreferences,
 } from '../utils/preferences';
 import { clampPage, pageOffset } from '../utils/pagination';
+import { ARTICLE_SOURCE_OPTIONS, SourceFilter } from '../utils/source';
 
 interface Pagination {
   total: number;
@@ -65,7 +66,8 @@ const Home: React.FC = () => {
       query = searchQuery,
       sort: SortOrder = preferences.sort,
       cat: SentimentFilter = preferences.sentiment,
-      bias: BiasFilter = preferences.bias
+      bias: BiasFilter = preferences.bias,
+      source: SourceFilter = preferences.source
     ) => {
       setIsLoading(true);
       setLoadError('');
@@ -76,6 +78,7 @@ const Home: React.FC = () => {
           sort,
           category: cat,
           bias,
+          source,
           allTime: true,
         });
         setArticles(
@@ -99,7 +102,7 @@ const Home: React.FC = () => {
         setIsLoading(false);
       }
     },
-    [preferences.bias, preferences.sentiment, preferences.sort, searchQuery]
+    [preferences.bias, preferences.sentiment, preferences.sort, preferences.source, searchQuery]
   );
 
   useEffect(() => {
@@ -111,9 +114,10 @@ const Home: React.FC = () => {
       searchQuery,
       preferences.sort,
       preferences.sentiment,
-      preferences.bias
+      preferences.bias,
+      preferences.source
     );
-  }, [loadArticles, preferences.bias, preferences.sentiment, preferences.sort, preferences.theme, searchQuery]);
+  }, [loadArticles, preferences.bias, preferences.sentiment, preferences.sort, preferences.source, preferences.theme, searchQuery]);
 
   useEffect(() => {
     localStorage.setItem('newsNowSearch', searchQuery);
@@ -179,7 +183,7 @@ const Home: React.FC = () => {
       </section>
 
       <section className="mb-6 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-3">
-        <div className="grid gap-3 lg:grid-cols-[minmax(220px,0.85fr),150px,150px,150px,auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr),145px,150px,155px,145px,auto]">
           <div className="signal-focus flex min-w-0 overflow-hidden rounded-md border border-[var(--line)] bg-[var(--app-bg)] focus-within:border-[var(--accent)]">
             <div className="flex items-center px-3 text-zinc-500">
               <MagnifyingGlassIcon className="h-5 w-5" />
@@ -212,7 +216,8 @@ const Home: React.FC = () => {
                 searchQuery,
                 preferences.sort,
                 sentiment,
-                preferences.bias
+                preferences.bias,
+                preferences.source
               );
             }}
             className="signal-focus rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200"
@@ -233,7 +238,8 @@ const Home: React.FC = () => {
                 searchQuery,
                 preferences.sort,
                 preferences.sentiment,
-                bias
+                bias,
+                preferences.source
               );
             }}
             className="signal-focus rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200"
@@ -246,6 +252,31 @@ const Home: React.FC = () => {
           </select>
 
           <select
+            value={preferences.source}
+            onChange={(e) => {
+              const source = e.target.value as SourceFilter;
+              updatePreferences({ source });
+              loadArticles(
+                0,
+                searchQuery,
+                preferences.sort,
+                preferences.sentiment,
+                preferences.bias,
+                source
+              );
+            }}
+            className="signal-focus rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200"
+            aria-label="News source"
+          >
+            <option value="">All Sources</option>
+            {ARTICLE_SOURCE_OPTIONS.map((source) => (
+              <option key={source.value} value={source.value}>
+                {source.label}
+              </option>
+            ))}
+          </select>
+
+          <select
             value={preferences.sort}
             onChange={(e) => {
               const sort = e.target.value as SortOrder;
@@ -255,7 +286,8 @@ const Home: React.FC = () => {
                 searchQuery,
                 sort,
                 preferences.sentiment,
-                preferences.bias
+                preferences.bias,
+                preferences.source
               );
             }}
             className="signal-focus rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200"
