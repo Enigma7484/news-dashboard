@@ -249,6 +249,7 @@ const Home: React.FC = () => {
             <option value="left">Left Leaning</option>
             <option value="centrist">Centrist</option>
             <option value="right">Right Leaning</option>
+            <option value="apolitical">Apolitical</option>
           </select>
 
           <select

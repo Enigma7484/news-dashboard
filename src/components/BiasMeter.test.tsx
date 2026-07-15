@@ -25,4 +25,19 @@ describe('BiasMeter', () => {
     expect(screen.getByLabelText('Political bias analysis pending')).toBeInTheDocument();
     expect(screen.getByText('Awaiting analysis')).toBeInTheDocument();
   });
+
+  it('shows non-political coverage as apolitical rather than centrist', () => {
+    render(
+      <BiasMeter
+        bias="centrist"
+        score={0}
+        isPolitical={false}
+        compact
+      />
+    );
+
+    expect(screen.getByLabelText('Article perspective: apolitical')).toBeInTheDocument();
+    expect(screen.getByText('Apolitical')).toBeInTheDocument();
+    expect(screen.queryByText('centrist')).not.toBeInTheDocument();
+  });
 });

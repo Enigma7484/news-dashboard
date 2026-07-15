@@ -9,6 +9,7 @@ export interface BiasSignal {
 
 interface BiasMeterProps {
   bias?: BiasLabel | null;
+  isPolitical?: boolean | null;
   score?: number | null;
   confidence?: number | null;
   signals?: BiasSignal[];
@@ -35,6 +36,7 @@ function clampScore(score?: number | null) {
 
 const BiasMeter: React.FC<BiasMeterProps> = ({
   bias,
+  isPolitical,
   score,
   confidence,
   signals = [],
@@ -44,6 +46,7 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
   const normalizedScore = clampScore(score);
   const label = bias || 'centrist';
   const isPending = !bias;
+  const isApolitical = !isPending && isPolitical === false;
   const confidencePercent =
     typeof confidence === 'number'
       ? Math.round(Math.max(0, Math.min(1, confidence)) * 100)
@@ -52,7 +55,13 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
   return (
     <section
       className={compact ? 'mt-4' : 'mt-8 rounded-lg border border-[var(--line)] bg-[var(--panel-muted)] p-4 sm:p-5'}
-      aria-label={isPending ? 'Political bias analysis pending' : `Political bias: ${label}`}
+      aria-label={
+        isPending
+          ? 'Political bias analysis pending'
+          : isApolitical
+            ? 'Article perspective: apolitical'
+            : `Political bias: ${label}`
+      }
     >
       <div className="mb-2.5 flex items-center justify-between gap-3">
         <div>
@@ -66,18 +75,30 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
           )}
         </div>
         <span
-          className={`rounded px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.1em] ring-1 ${isPending ? 'bg-white/[0.04] text-zinc-500 ring-white/10' : biasTone[label]}`}
+          className={`rounded px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.1em] ring-1 ${
+            isPending
+              ? 'bg-white/[0.04] text-zinc-500 ring-white/10'
+              : isApolitical
+                ? 'bg-zinc-500/10 text-zinc-600 ring-zinc-500/25 dark:text-zinc-300'
+                : biasTone[label]
+          }`}
         >
-          {isPending ? 'Awaiting analysis' : label}
+          {isPending ? 'Awaiting analysis' : isApolitical ? 'Apolitical' : label}
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-1.5" role="meter" aria-valuemin={-1} aria-valuemax={1} aria-valuenow={isPending ? undefined : normalizedScore}>
+      <div
+        className="grid grid-cols-3 gap-1.5"
+        role={isPending || isApolitical ? 'group' : 'meter'}
+        aria-valuemin={isPending || isApolitical ? undefined : -1}
+        aria-valuemax={isPending || isApolitical ? undefined : 1}
+        aria-valuenow={isPending || isApolitical ? undefined : normalizedScore}
+      >
         {(['left', 'centrist', 'right'] as BiasLabel[]).map((segment) => (
           <span
             key={segment}
             className={`h-2 rounded-sm transition ${
-              !isPending && label === segment
+              !isPending && !isApolitical && label === segment
                 ? segmentTone[segment]
                 : 'bg-zinc-200 dark:bg-white/[0.07]'
             }`}
@@ -86,9 +107,9 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
       </div>
 
       <div className="mt-1.5 flex justify-between font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-zinc-500">
-        <span className={!isPending && label === 'left' ? 'text-[#8e9cff]' : ''}>Left</span>
-        <span className={!isPending && label === 'centrist' ? 'text-[var(--accent)]' : ''}>Center</span>
-        <span className={!isPending && label === 'right' ? 'text-[#ff9f7d]' : ''}>Right</span>
+        <span className={!isPending && !isApolitical && label === 'left' ? 'text-[#8e9cff]' : ''}>Left</span>
+        <span className={!isPending && !isApolitical && label === 'centrist' ? 'text-[var(--accent)]' : ''}>Center</span>
+        <span className={!isPending && !isApolitical && label === 'right' ? 'text-[#ff9f7d]' : ''}>Right</span>
       </div>
 
       {!compact && (
@@ -97,7 +118,7 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
             {confidencePercent !== null && (
               <span>{confidencePercent}% confidence</span>
             )}
-            <span>Framing estimate, not a fact-check</span>
+            <span>{isApolitical ? 'No meaningful political framing detected' : 'Framing estimate, not a fact-check'}</span>
           </div>
           {rationale && (
             <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
