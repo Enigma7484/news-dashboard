@@ -67,7 +67,7 @@ export function getLookupKeywords(dynamicKeywords: string[] = []): string[] {
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
   ]);
 
-  return Array.from(new Set(dynamicKeywords.map(k => normalizeKeyword(k))))
+  const keywords = Array.from(new Set(dynamicKeywords.map(k => normalizeKeyword(k))))
     .filter(k => {
       const lower = k.toLowerCase();
       if (stopwords.has(lower)) return false;
@@ -81,6 +81,14 @@ export function getLookupKeywords(dynamicKeywords: string[] = []): string[] {
       if (k.length === 1) return false;
       if (isAcronym(k)) return k.replace(/[^A-Z]/g, '').length >= 2;
       return /\b[A-Z][a-z][\w'-]*\b/.test(k) && k.length > 2;
+    });
+
+  const keywordKeys = new Set(keywords.map(keyword => keyword.toLowerCase()));
+
+  return keywords
+    .filter(keyword => {
+      const tokens = keyword.toLowerCase().split(/\s+/);
+      return tokens.length === 1 || !tokens.every(token => keywordKeys.has(token));
     })
     .sort((a, b) => b.length - a.length);
 }

@@ -9,6 +9,7 @@ import { getLookupKeywords, linkifyKeywords } from '../utils/keywordLinkifier';
 import { getArticleSource } from '../utils/source';
 import { Density, ViewMode } from '../utils/preferences';
 import { cleanDisplaySummary } from '../utils/text';
+import BiasMeter, { BiasLabel, BiasSignal } from './BiasMeter';
 
 interface ArticleProps {
   _id: string;
@@ -18,13 +19,17 @@ interface ArticleProps {
   summary: string;
   image?: string | null;
   timestamp?: string;
-  entities: string[];
+  entities?: string[];
   viewMode: ViewMode;
   density: Density;
   showImages: boolean;
   highlightEntities: boolean;
   source_name?: string;
   source_url?: string;
+  bias?: BiasLabel | null;
+  bias_score?: number | null;
+  bias_confidence?: number | null;
+  bias_signals?: BiasSignal[];
 }
 
 const sentimentStyles: Record<string, string> = {
@@ -50,13 +55,17 @@ const ArticleCard: React.FC<ArticleProps> = ({
   summary,
   image,
   timestamp,
-  entities,
+  entities = [],
   viewMode,
   density,
   showImages,
   highlightEntities,
   source_name,
   source_url,
+  bias,
+  bias_score,
+  bias_confidence,
+  bias_signals,
 }) => {
   const displaySummary = cleanDisplaySummary(summary, headline);
   const displayEntities = getLookupKeywords(entities);
@@ -127,6 +136,14 @@ const ArticleCard: React.FC<ArticleProps> = ({
             isCompact ? 'line-clamp-2' : isSpotlight ? 'line-clamp-5' : 'line-clamp-4',
           ].join(' ')}
           dangerouslySetInnerHTML={{ __html: linkedSummary }}
+        />
+
+        <BiasMeter
+          bias={bias}
+          score={bias_score}
+          confidence={bias_confidence}
+          signals={bias_signals}
+          compact
         />
 
         {displayEntities.length > 0 && !isCompact && (

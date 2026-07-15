@@ -35,6 +35,14 @@ export interface Article {
   summary: string;
   timestamp: string;
   url: string;
+  bias?: 'left' | 'centrist' | 'right' | null;
+  bias_score?: number | null;
+  bias_confidence?: number | null;
+  bias_method?: string | null;
+  bias_signals?: Array<{
+    phrase: string;
+    lean: 'left' | 'right';
+  }>;
   source_name?: string;
   source_url?: string;
 }

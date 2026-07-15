@@ -29,4 +29,10 @@ describe('article text cleanup', () => {
       getLookupKeywords(['This video cannot be played', 'III', 'PWHL', 'Spain', 'CDC'])
     ).toEqual(['Spain', 'PWHL', 'CDC']);
   });
+
+  it('removes merged entities when every component is already an entity', () => {
+    expect(
+      getLookupKeywords(['France Spain', 'France', 'Spain', 'World Cup'])
+    ).toEqual(['World Cup', 'France', 'Spain']);
+  });
 });

@@ -6,24 +6,12 @@ import {
   CalendarDaysIcon,
   NewspaperIcon,
 } from '@heroicons/react/24/outline';
-import { fetchArticleById } from '../api';
+import { Article, fetchArticleById } from '../api';
 import { getLookupKeywords, linkifyKeywords } from '../utils/keywordLinkifier';
 import { getArticleSource } from '../utils/source';
 import { getPreferences } from '../utils/preferences';
 import { cleanDisplaySummary } from '../utils/text';
-
-interface Article {
-  _id: string;
-  headline: string;
-  url: string;
-  sentiment: 'positive' | 'neutral' | 'negative';
-  summary: string;
-  image: string | null;
-  timestamp: string;
-  entities?: string[];
-  source_name?: string;
-  source_url?: string;
-}
+import BiasMeter from '../components/BiasMeter';
 
 const sentimentLabels: Record<string, string> = {
   positive: 'bg-emerald-100 text-emerald-800 ring-emerald-200 dark:bg-emerald-400/15 dark:text-emerald-200 dark:ring-emerald-400/20',
@@ -141,6 +129,15 @@ const ArticleDetail: React.FC = () => {
             className="mt-6 max-w-3xl text-lg leading-8 text-slate-700 dark:text-slate-200"
             dangerouslySetInnerHTML={{ __html: linkedSummary }}
           />
+
+          <div className="max-w-3xl">
+            <BiasMeter
+              bias={article.bias}
+              score={article.bias_score}
+              confidence={article.bias_confidence}
+              signals={article.bias_signals}
+            />
+          </div>
 
           {displayEntities.length > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">

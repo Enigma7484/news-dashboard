@@ -5,7 +5,7 @@ import {
   ListBulletIcon,
   RectangleGroupIcon,
 } from '@heroicons/react/24/outline';
-import { fetchArticles } from '../api';
+import { Article, fetchArticles } from '../api';
 import ArticleCard from '../components/ArticleCard';
 import {
   Preferences,
@@ -16,17 +16,6 @@ import {
   getPreferences,
   savePreferences,
 } from '../utils/preferences';
-
-interface Article {
-  _id: string;
-  headline: string;
-  url: string;
-  sentiment: 'positive' | 'neutral' | 'negative';
-  summary: string;
-  image?: string;
-  entities: string[];
-  timestamp?: string;
-}
 
 interface Pagination {
   total: number;
