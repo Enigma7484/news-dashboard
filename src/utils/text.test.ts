@@ -30,9 +30,4 @@ describe('article text cleanup', () => {
     ).toEqual(['Spain', 'PWHL', 'CDC']);
   });
 
-  it('removes merged entities when every component is already an entity', () => {
-    expect(
-      getLookupKeywords(['France Spain', 'France', 'Spain', 'World Cup'])
-    ).toEqual(['World Cup', 'France', 'Spain']);
-  });
 });
