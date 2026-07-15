@@ -30,6 +30,7 @@ interface ArticleProps {
   bias_score?: number | null;
   bias_confidence?: number | null;
   bias_signals?: BiasSignal[];
+  bias_rationale?: string | null;
 }
 
 const sentimentStyles: Record<string, string> = {
@@ -66,6 +67,7 @@ const ArticleCard: React.FC<ArticleProps> = ({
   bias_score,
   bias_confidence,
   bias_signals,
+  bias_rationale,
 }) => {
   const displaySummary = cleanDisplaySummary(summary, headline);
   const displayEntities = getLookupKeywords(entities);
@@ -143,6 +145,7 @@ const ArticleCard: React.FC<ArticleProps> = ({
           score={bias_score}
           confidence={bias_confidence}
           signals={bias_signals}
+          rationale={bias_rationale}
           compact
         />
 

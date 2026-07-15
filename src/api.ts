@@ -11,6 +11,7 @@ interface PaginationParams {
   sort?: 'asc' | 'desc';
   keyword?: string;
   category?: 'positive' | 'negative' | 'neutral' | '';
+  bias?: 'left' | 'centrist' | 'right' | '';
   allTime?: boolean;
 }
 
@@ -39,9 +40,11 @@ export interface Article {
   bias_score?: number | null;
   bias_confidence?: number | null;
   bias_method?: string | null;
+  bias_rationale?: string | null;
+  bias_is_political?: boolean | null;
   bias_signals?: Array<{
     phrase: string;
-    lean: 'left' | 'right';
+    lean: 'left' | 'centrist' | 'right';
   }>;
   source_name?: string;
   source_url?: string;
@@ -83,6 +86,10 @@ export async function fetchArticles(params: PaginationParams = {}) {
 
   if (params.category) {
     queryParams.append('category', params.category);
+  }
+
+  if (params.bias) {
+    queryParams.append('bias', params.bias);
   }
 
   if (params.allTime) {

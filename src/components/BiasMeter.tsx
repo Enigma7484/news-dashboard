@@ -4,7 +4,7 @@ export type BiasLabel = 'left' | 'centrist' | 'right';
 
 export interface BiasSignal {
   phrase: string;
-  lean: 'left' | 'right';
+  lean: BiasLabel;
 }
 
 interface BiasMeterProps {
@@ -12,13 +12,20 @@ interface BiasMeterProps {
   score?: number | null;
   confidence?: number | null;
   signals?: BiasSignal[];
+  rationale?: string | null;
   compact?: boolean;
 }
 
 const biasTone: Record<BiasLabel, string> = {
-  left: 'bg-blue-100 text-blue-800 ring-blue-200 dark:bg-blue-400/15 dark:text-blue-200 dark:ring-blue-400/25',
-  centrist: 'bg-zinc-100 text-zinc-700 ring-zinc-200 dark:bg-white/[0.06] dark:text-zinc-200 dark:ring-white/10',
-  right: 'bg-red-100 text-red-800 ring-red-200 dark:bg-red-400/15 dark:text-red-200 dark:ring-red-400/25',
+  left: 'bg-[#7788ff]/15 text-[#aab4ff] ring-[#7788ff]/30',
+  centrist: 'bg-[var(--accent)]/10 text-[#658b00] ring-[var(--accent)]/30 dark:text-[var(--accent-soft)]',
+  right: 'bg-[#ff906b]/15 text-[#b64b2b] ring-[#ff906b]/30 dark:text-[#ffb199]',
+};
+
+const segmentTone: Record<BiasLabel, string> = {
+  left: 'bg-[#7788ff] shadow-[0_0_14px_rgba(119,136,255,0.45)]',
+  centrist: 'bg-[var(--accent)] shadow-[0_0_14px_rgba(185,255,44,0.35)]',
+  right: 'bg-[#ff906b] shadow-[0_0_14px_rgba(255,144,107,0.42)]',
 };
 
 function clampScore(score?: number | null) {
@@ -31,10 +38,10 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
   score,
   confidence,
   signals = [],
+  rationale,
   compact = false,
 }) => {
   const normalizedScore = clampScore(score);
-  const markerPosition = `${2 + ((normalizedScore + 1) / 2) * 96}%`;
   const label = bias || 'centrist';
   const isPending = !bias;
   const confidencePercent =
@@ -50,36 +57,38 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
       <div className="mb-2.5 flex items-center justify-between gap-3">
         <div>
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
-            Bias meter / article framing
+            Perspective
           </p>
           {!compact && (
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Estimated from the language used across the article
+              AI estimate from the complete article's framing
             </p>
           )}
         </div>
         <span
-          className={`rounded px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.1em] ring-1 ${biasTone[label]}`}
+          className={`rounded px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.1em] ring-1 ${isPending ? 'bg-white/[0.04] text-zinc-500 ring-white/10' : biasTone[label]}`}
         >
-          {isPending ? 'Pending' : label}
+          {isPending ? 'Awaiting analysis' : label}
         </span>
       </div>
 
-      <div className="relative pt-1">
-        <div className="h-2 overflow-hidden rounded-full bg-gradient-to-r from-blue-500 via-zinc-300 to-red-500 dark:via-zinc-600">
-          <div className="absolute left-1/2 top-0 h-4 w-px -translate-x-1/2 bg-[var(--text)]/40" />
-        </div>
-        <span
-          className="absolute top-0 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-white bg-[var(--text)] shadow-sm transition-[left] dark:border-slate-900"
-          style={{ left: markerPosition }}
-          aria-hidden="true"
-        />
+      <div className="grid grid-cols-3 gap-1.5" role="meter" aria-valuemin={-1} aria-valuemax={1} aria-valuenow={isPending ? undefined : normalizedScore}>
+        {(['left', 'centrist', 'right'] as BiasLabel[]).map((segment) => (
+          <span
+            key={segment}
+            className={`h-2 rounded-sm transition ${
+              !isPending && label === segment
+                ? segmentTone[segment]
+                : 'bg-zinc-200 dark:bg-white/[0.07]'
+            }`}
+          />
+        ))}
       </div>
 
       <div className="mt-1.5 flex justify-between font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-zinc-500">
-        <span>Left</span>
-        <span>Centrist</span>
-        <span>Right</span>
+        <span className={!isPending && label === 'left' ? 'text-[#8e9cff]' : ''}>Left</span>
+        <span className={!isPending && label === 'centrist' ? 'text-[var(--accent)]' : ''}>Center</span>
+        <span className={!isPending && label === 'right' ? 'text-[#ff9f7d]' : ''}>Right</span>
       </div>
 
       {!compact && (
@@ -90,6 +99,11 @@ const BiasMeter: React.FC<BiasMeterProps> = ({
             )}
             <span>Framing estimate, not a fact-check</span>
           </div>
+          {rationale && (
+            <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+              {rationale}
+            </p>
+          )}
           {signals.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2" aria-label="Framing signals">
               {signals.slice(0, 5).map((signal) => (

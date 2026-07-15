@@ -8,6 +8,7 @@ import {
 import { Article, fetchArticles } from '../api';
 import ArticleCard from '../components/ArticleCard';
 import {
+  BiasFilter,
   Preferences,
   SentimentFilter,
   SortOrder,
@@ -16,6 +17,7 @@ import {
   getPreferences,
   savePreferences,
 } from '../utils/preferences';
+import { clampPage, pageOffset } from '../utils/pagination';
 
 interface Pagination {
   total: number;
@@ -44,6 +46,7 @@ const Home: React.FC = () => {
   const [preferences, setPreferences] = useState<Preferences>(() => getPreferences());
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [pageInput, setPageInput] = useState('1');
   const didInitialLoad = useRef(false);
 
   const updatePreferences = (patch: Partial<Preferences>) => {
@@ -61,7 +64,8 @@ const Home: React.FC = () => {
       offset = 0,
       query = searchQuery,
       sort: SortOrder = preferences.sort,
-      cat: SentimentFilter = preferences.sentiment
+      cat: SentimentFilter = preferences.sentiment,
+      bias: BiasFilter = preferences.bias
     ) => {
       setIsLoading(true);
       setLoadError('');
@@ -71,6 +75,7 @@ const Home: React.FC = () => {
           keyword: query,
           sort,
           category: cat,
+          bias,
           allTime: true,
         });
         setArticles(
@@ -94,15 +99,21 @@ const Home: React.FC = () => {
         setIsLoading(false);
       }
     },
-    [preferences.sentiment, preferences.sort, searchQuery]
+    [preferences.bias, preferences.sentiment, preferences.sort, searchQuery]
   );
 
   useEffect(() => {
     if (didInitialLoad.current) return;
     didInitialLoad.current = true;
     applyTheme(preferences.theme);
-    loadArticles(0, searchQuery, preferences.sort, preferences.sentiment);
-  }, [loadArticles, preferences.sentiment, preferences.sort, preferences.theme, searchQuery]);
+    loadArticles(
+      0,
+      searchQuery,
+      preferences.sort,
+      preferences.sentiment,
+      preferences.bias
+    );
+  }, [loadArticles, preferences.bias, preferences.sentiment, preferences.sort, preferences.theme, searchQuery]);
 
   useEffect(() => {
     localStorage.setItem('newsNowSearch', searchQuery);
@@ -130,6 +141,18 @@ const Home: React.FC = () => {
   const page = Math.floor(pagination.offset / pagination.page_size) + 1;
   const totalPages = Math.ceil(pagination.total / pagination.page_size) || 1;
 
+  useEffect(() => {
+    setPageInput(String(page));
+  }, [page]);
+
+  const goToPage = (requestedPage: number) => {
+    const targetPage = clampPage(requestedPage, totalPages);
+    setPageInput(String(targetPage));
+    loadArticles(
+      pageOffset(targetPage, pagination.page_size, totalPages)
+    );
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
       <section className="signal-grid relative mb-6 overflow-hidden border-y border-[var(--line)] bg-[var(--panel-muted)]">
@@ -156,7 +179,7 @@ const Home: React.FC = () => {
       </section>
 
       <section className="mb-6 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-3">
-        <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr),180px,180px,auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(220px,0.85fr),150px,150px,150px,auto]">
           <div className="signal-focus flex min-w-0 overflow-hidden rounded-md border border-[var(--line)] bg-[var(--app-bg)] focus-within:border-[var(--accent)]">
             <div className="flex items-center px-3 text-zinc-500">
               <MagnifyingGlassIcon className="h-5 w-5" />
@@ -184,7 +207,13 @@ const Home: React.FC = () => {
             onChange={(e) => {
               const sentiment = e.target.value as SentimentFilter;
               updatePreferences({ sentiment });
-              loadArticles(0, searchQuery, preferences.sort, sentiment);
+              loadArticles(
+                0,
+                searchQuery,
+                preferences.sort,
+                sentiment,
+                preferences.bias
+              );
             }}
             className="signal-focus rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200"
           >
@@ -195,11 +224,39 @@ const Home: React.FC = () => {
           </select>
 
           <select
+            value={preferences.bias}
+            onChange={(e) => {
+              const bias = e.target.value as BiasFilter;
+              updatePreferences({ bias });
+              loadArticles(
+                0,
+                searchQuery,
+                preferences.sort,
+                preferences.sentiment,
+                bias
+              );
+            }}
+            className="signal-focus rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200"
+            aria-label="Political perspective"
+          >
+            <option value="">All Perspectives</option>
+            <option value="left">Left Leaning</option>
+            <option value="centrist">Centrist</option>
+            <option value="right">Right Leaning</option>
+          </select>
+
+          <select
             value={preferences.sort}
             onChange={(e) => {
               const sort = e.target.value as SortOrder;
               updatePreferences({ sort });
-              loadArticles(0, searchQuery, sort, preferences.sentiment);
+              loadArticles(
+                0,
+                searchQuery,
+                sort,
+                preferences.sentiment,
+                preferences.bias
+              );
             }}
             className="signal-focus rounded-md border border-[var(--line)] bg-[var(--app-bg)] px-3 py-3 text-sm font-bold text-zinc-700 dark:text-zinc-200"
           >
@@ -263,25 +320,58 @@ const Home: React.FC = () => {
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <button
-          onClick={() =>
-            loadArticles(Math.max(0, pagination.offset - pagination.page_size))
-          }
-          disabled={pagination.offset === 0}
+          onClick={() => goToPage(1)}
+          disabled={page === 1}
+          className="rounded-md border border-[var(--line)] bg-[var(--panel)] px-4 py-2 text-sm font-bold text-[var(--text)] transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          First
+        </button>
+        <button
+          onClick={() => goToPage(page - 1)}
+          disabled={page === 1}
           className="rounded-md border border-[var(--line)] bg-[var(--panel)] px-4 py-2 text-sm font-bold text-[var(--text)] transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Prev
         </button>
-        <span className="font-mono text-xs font-bold uppercase tracking-[0.12em] text-zinc-600 dark:text-zinc-400">
-          Page {page} of {totalPages}
-        </span>
+        <div className="flex items-center gap-2 rounded-md border border-[var(--line)] bg-[var(--panel)] p-1 pl-3">
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">
+            Page
+          </span>
+          <input
+            type="number"
+            min="1"
+            max={totalPages}
+            value={pageInput}
+            onChange={(e) => setPageInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') goToPage(Number(pageInput));
+            }}
+            className="signal-focus h-8 w-16 rounded border border-[var(--line)] bg-[var(--app-bg)] px-2 text-center font-mono text-xs font-bold text-[var(--text)]"
+            aria-label="Page number"
+          />
+          <span className="pr-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500">
+            of {totalPages}
+          </span>
+          <button
+            onClick={() => goToPage(Number(pageInput))}
+            className="h-8 rounded bg-[var(--accent)] px-3 text-xs font-black text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)]"
+          >
+            Go
+          </button>
+        </div>
         <button
-          onClick={() =>
-            loadArticles(pagination.offset + pagination.page_size)
-          }
+          onClick={() => goToPage(page + 1)}
           disabled={!pagination.has_more}
-          className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-black text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-[#1b1f1c] dark:disabled:text-zinc-600"
+          className="rounded-md border border-[var(--line)] bg-[var(--panel)] px-4 py-2 text-sm font-bold text-[var(--text)] transition hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Next
+        </button>
+        <button
+          onClick={() => goToPage(totalPages)}
+          disabled={page === totalPages}
+          className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-black text-[var(--accent-contrast)] transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-[#1b1f1c] dark:disabled:text-zinc-600"
+        >
+          Last
         </button>
       </div>
     </div>
