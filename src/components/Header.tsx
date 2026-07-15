@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleDarkMode }) => {
     }`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--app-bg)]/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--app-bg)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
           <img src={Logo} alt="NewsNow" className="h-11 w-11 rounded-md border border-[var(--line)] object-cover" />

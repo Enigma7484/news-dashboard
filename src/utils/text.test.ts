@@ -18,4 +18,15 @@ describe('article text cleanup', () => {
       'search=Save%20Share%20Cuba'
     );
   });
+
+  it('removes BBC player errors and standalone Roman numerals', () => {
+    expect(
+      cleanDisplaySummary(
+        'This video can not be played Spain reached the World Cup final.'
+      )
+    ).toBe('Spain reached the World Cup final.');
+    expect(
+      getLookupKeywords(['This video cannot be played', 'III', 'PWHL', 'Spain', 'CDC'])
+    ).toEqual(['Spain', 'PWHL', 'CDC']);
+  });
 });

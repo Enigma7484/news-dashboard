@@ -72,7 +72,9 @@ export function getLookupKeywords(dynamicKeywords: string[] = []): string[] {
       const lower = k.toLowerCase();
       if (stopwords.has(lower)) return false;
       if (/\bsave\s+share\b/.test(lower)) return false;
+      if (/\bthis video can\s*not be played\b/.test(lower)) return false;
       if (/\d/.test(k)) return false;
+      if (/^m{0,4}(?:cm|cd|d?c{0,3})(?:xc|xl|l?x{0,3})(?:ix|iv|v?i{0,3})$/i.test(k)) return false;
       const tokens = lower.split(/\s+/);
       if (tokens.length <= 2 && tokens.some(token => weekdays.has(token))) return false;
       if (tokens.every(token => stopwords.has(token))) return false;

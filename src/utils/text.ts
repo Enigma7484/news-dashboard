@@ -1,6 +1,7 @@
 export function cleanDisplaySummary(summary: string, headline = ''): string {
   const cleaned = (summary || '')
     .replace(/\bsave\s+share\b/gi, ' ')
+    .replace(/\bthis video can\s*not be played\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .replace(/\s+([.,!?;:])/g, '$1')
     .trim();
