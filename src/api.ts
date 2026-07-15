@@ -11,6 +11,7 @@ interface PaginationParams {
   sort?: 'asc' | 'desc';
   keyword?: string;
   category?: 'positive' | 'negative' | 'neutral' | '';
+  bias?: 'left' | 'centrist' | 'right' | '';
   allTime?: boolean;
 }
 
@@ -85,6 +86,10 @@ export async function fetchArticles(params: PaginationParams = {}) {
 
   if (params.category) {
     queryParams.append('category', params.category);
+  }
+
+  if (params.bias) {
+    queryParams.append('bias', params.bias);
   }
 
   if (params.allTime) {

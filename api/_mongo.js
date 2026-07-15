@@ -54,6 +54,7 @@ function qualityQuery() {
 function buildArticlesQuery(queryParams = {}) {
   const query = qualityQuery();
   const category = String(queryParams.category || '').toLowerCase();
+  const bias = String(queryParams.bias || '').toLowerCase();
   const keyword = String(queryParams.keyword || '').trim();
   const allTime = ['1', 'true', 'yes'].includes(
     String(queryParams.all_time || '').toLowerCase()
@@ -61,6 +62,10 @@ function buildArticlesQuery(queryParams = {}) {
 
   if (['positive', 'negative', 'neutral'].includes(category)) {
     query.sentiment = category;
+  }
+
+  if (['left', 'centrist', 'right'].includes(bias)) {
+    query.bias = bias;
   }
 
   if (keyword) {

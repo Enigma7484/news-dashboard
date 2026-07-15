@@ -1,4 +1,5 @@
 export type SentimentFilter = '' | 'positive' | 'neutral' | 'negative';
+export type BiasFilter = '' | 'left' | 'centrist' | 'right';
 export type SortOrder = 'asc' | 'desc';
 export type ViewMode = 'grid' | 'compact' | 'spotlight';
 export type ThemeMode = 'signal' | 'dark' | 'light' | 'system';
@@ -6,6 +7,7 @@ export type Density = 'comfortable' | 'compact';
 
 export interface Preferences {
   sentiment: SentimentFilter;
+  bias: BiasFilter;
   sort: SortOrder;
   view: ViewMode;
   theme: ThemeMode;
@@ -18,6 +20,7 @@ const STORAGE_KEY = 'newsNowPreferences';
 
 export const defaultPreferences: Preferences = {
   sentiment: '',
+  bias: '',
   sort: 'desc',
   view: 'grid',
   theme: 'signal',
@@ -28,6 +31,12 @@ export const defaultPreferences: Preferences = {
 
 function normalizeSentiment(value: unknown): SentimentFilter {
   return value === 'positive' || value === 'neutral' || value === 'negative'
+    ? value
+    : '';
+}
+
+function normalizeBias(value: unknown): BiasFilter {
+  return value === 'left' || value === 'centrist' || value === 'right'
     ? value
     : '';
 }
@@ -56,6 +65,7 @@ export function getPreferences(): Preferences {
       ...readLegacyPreferences(),
       ...parsed,
       sentiment: normalizeSentiment(parsed.sentiment ?? readLegacyPreferences().sentiment),
+      bias: normalizeBias(parsed.bias),
       sort: parsed.sort === 'asc' ? 'asc' : 'desc',
       view: ['grid', 'compact', 'spotlight'].includes(parsed.view)
         ? parsed.view

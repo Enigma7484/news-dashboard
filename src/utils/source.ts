@@ -11,6 +11,7 @@ const SOURCE_NAMES: Record<string, string> = {
   'nytimes.com': 'NYT',
   'aljazeera.com': 'Al Jazeera',
   'cbc.ca': 'CBC',
+  'foxnews.com': 'Fox News',
   'bleacherreport.com': 'Bleacher Report',
 };
 
