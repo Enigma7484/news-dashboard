@@ -35,7 +35,7 @@ interface ArticleProps {
 }
 
 const sentimentStyles: Record<string, string> = {
-  positive: 'bg-lime-100 text-lime-900 ring-lime-200 dark:bg-white/5 dark:text-[var(--accent-soft)] dark:ring-[var(--accent)]/30',
+  positive: 'bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-white/5 dark:text-[var(--accent-soft)] dark:ring-[var(--accent)]/30',
   neutral: 'bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-400/15 dark:text-amber-100 dark:ring-amber-400/20',
   negative: 'bg-rose-100 text-rose-800 ring-rose-200 dark:bg-rose-400/15 dark:text-rose-100 dark:ring-rose-400/20',
 };
@@ -82,7 +82,7 @@ const ArticleCard: React.FC<ArticleProps> = ({
   return (
     <article
       className={[
-        'group overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--panel)] transition duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-[0_18px_60px_rgba(20,30,10,0.12)]',
+        'group overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--panel)] transition duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-[0_18px_60px_rgba(15,118,110,0.13)] dark:hover:shadow-[0_18px_60px_rgba(20,30,10,0.12)]',
         isCompact ? 'grid grid-cols-[96px,1fr]' : 'flex flex-col',
         isSpotlight ? 'lg:grid lg:grid-cols-[minmax(260px,0.9fr),1.1fr]' : '',
       ].join(' ')}

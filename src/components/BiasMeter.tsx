@@ -19,13 +19,13 @@ interface BiasMeterProps {
 
 const biasTone: Record<BiasLabel, string> = {
   left: 'bg-[#7788ff]/15 text-[#aab4ff] ring-[#7788ff]/30',
-  centrist: 'bg-[var(--accent)]/10 text-[#658b00] ring-[var(--accent)]/30 dark:text-[var(--accent-soft)]',
+  centrist: 'bg-[var(--accent)]/10 text-[var(--accent)] ring-[var(--accent)]/30 dark:text-[var(--accent-soft)]',
   right: 'bg-[#ff906b]/15 text-[#b64b2b] ring-[#ff906b]/30 dark:text-[#ffb199]',
 };
 
 const segmentTone: Record<BiasLabel, string> = {
   left: 'bg-[#7788ff] shadow-[0_0_14px_rgba(119,136,255,0.45)]',
-  centrist: 'bg-[var(--accent)] shadow-[0_0_14px_rgba(185,255,44,0.35)]',
+  centrist: 'bg-[var(--accent)] shadow-[0_0_14px_rgba(15,118,110,0.28)] dark:shadow-[0_0_14px_rgba(185,255,44,0.35)]',
   right: 'bg-[#ff906b] shadow-[0_0_14px_rgba(255,144,107,0.42)]',
 };
 

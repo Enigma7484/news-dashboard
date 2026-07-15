@@ -5,15 +5,15 @@
 
 @layer base {
   :root {
-    --accent: #6d9700;
-    --accent-hover: #8fca00;
-    --accent-soft: #dfff94;
-    --accent-contrast: #111411;
-    --app-bg: #f3f3ed;
+    --accent: #0f766e;
+    --accent-hover: #115e59;
+    --accent-soft: #99f6e4;
+    --accent-contrast: #ffffff;
+    --app-bg: #eef3f2;
     --panel: #ffffff;
-    --panel-muted: #eaeae3;
-    --line: #d7d8d1;
-    --text: #111411;
+    --panel-muted: #e4ecea;
+    --line: #c8d4d1;
+    --text: #132522;
   }
 
   .dark {
@@ -58,14 +58,14 @@
 @layer components {
   .entity-link {
     @apply rounded px-1 font-semibold underline decoration-2 underline-offset-2 transition;
-    background: rgb(185 255 44 / 0.1);
-    color: #4f6f00;
-    text-decoration-color: rgb(101 139 0 / 0.45);
+    background: rgb(13 148 136 / 0.1);
+    color: #0f766e;
+    text-decoration-color: rgb(13 148 136 / 0.42);
   }
 
   .entity-link:hover {
-    background: rgb(185 255 44 / 0.22);
-    color: #263700;
+    background: rgb(13 148 136 / 0.18);
+    color: #115e59;
   }
 
   .dark .entity-link {
@@ -88,7 +88,7 @@
 
   .signal-kicker {
     @apply font-mono text-xs font-bold uppercase;
-    color: #658b00;
+    color: var(--accent);
     letter-spacing: 0.16em;
   }
 
