@@ -27,6 +27,7 @@ interface ArticleProps {
   source_name?: string;
   source_url?: string;
   bias?: BiasLabel | null;
+  bias_is_political?: boolean | null;
   bias_score?: number | null;
   bias_confidence?: number | null;
   bias_signals?: BiasSignal[];
@@ -64,6 +65,7 @@ const ArticleCard: React.FC<ArticleProps> = ({
   source_name,
   source_url,
   bias,
+  bias_is_political,
   bias_score,
   bias_confidence,
   bias_signals,
@@ -142,6 +144,7 @@ const ArticleCard: React.FC<ArticleProps> = ({
 
         <BiasMeter
           bias={bias}
+          isPolitical={bias_is_political}
           score={bias_score}
           confidence={bias_confidence}
           signals={bias_signals}

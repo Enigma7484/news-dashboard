@@ -133,6 +133,7 @@ const ArticleDetail: React.FC = () => {
           <div className="max-w-3xl">
             <BiasMeter
               bias={article.bias}
+              isPolitical={article.bias_is_political}
               score={article.bias_score}
               confidence={article.bias_confidence}
               signals={article.bias_signals}

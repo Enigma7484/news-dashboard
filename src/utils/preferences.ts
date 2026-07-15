@@ -1,7 +1,7 @@
 import { normalizeSourceFilter, SourceFilter } from './source';
 
 export type SentimentFilter = '' | 'positive' | 'neutral' | 'negative';
-export type BiasFilter = '' | 'left' | 'centrist' | 'right';
+export type BiasFilter = '' | 'left' | 'centrist' | 'right' | 'apolitical';
 export type SortOrder = 'asc' | 'desc';
 export type ViewMode = 'grid' | 'compact' | 'spotlight';
 export type ThemeMode = 'signal' | 'dark' | 'light' | 'system';
@@ -40,7 +40,7 @@ function normalizeSentiment(value: unknown): SentimentFilter {
 }
 
 function normalizeBias(value: unknown): BiasFilter {
-  return value === 'left' || value === 'centrist' || value === 'right'
+  return value === 'left' || value === 'centrist' || value === 'right' || value === 'apolitical'
     ? value
     : '';
 }

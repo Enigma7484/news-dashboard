@@ -65,7 +65,12 @@ function buildArticlesQuery(queryParams = {}) {
     query.sentiment = category;
   }
 
-  if (['left', 'centrist', 'right'].includes(bias)) {
+  if (bias === 'apolitical') {
+    query.bias_is_political = false;
+  } else if (bias === 'centrist') {
+    query.bias = 'centrist';
+    query.bias_is_political = { $ne: false };
+  } else if (['left', 'right'].includes(bias)) {
     query.bias = bias;
   }
 

@@ -11,7 +11,7 @@ interface PaginationParams {
   sort?: 'asc' | 'desc';
   keyword?: string;
   category?: 'positive' | 'negative' | 'neutral' | '';
-  bias?: 'left' | 'centrist' | 'right' | '';
+  bias?: 'left' | 'centrist' | 'right' | 'apolitical' | '';
   source?: string;
   allTime?: boolean;
 }
